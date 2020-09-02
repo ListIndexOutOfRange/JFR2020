@@ -7,7 +7,7 @@
  -->
 
 
-![](./sfr.jpg)
+![](./img/sfr.jpg)
 
 <p align="center">
     <!-- Last Master Commit-->
@@ -153,6 +153,8 @@ Installer toutes les dépendances:
 
 # Usage
 [(Back to top)](#table-of-contents)
+
+![](./img/arch.png)
 
 Tous les hyperparamètres sont configurables dans le fichier config.py.
 Autrement, les hyperparamètres sont configurables en instanciant les dataclass de configuration (se référer à config.py pour les instancier correctement).
