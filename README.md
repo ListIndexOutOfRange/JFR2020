@@ -165,7 +165,15 @@ Enfin, ce model est donné à un objet trainer.
 En résumé, l'initilisation se fait en 3 étapes: 
 - 1. Instanciation d'une configuration
 - 2. Instanciation d'un model à l'aide de l'objet de configuration
-- 3. Instanciation d'un trainer avec un model. 
+- 3. Instanciation d'un trainer avec un model.
+
+
+Cette architecture a plusieurs avantages, notamment:
+
+1. Tous les hyperparamètres sont accessibles depuis un même fichier. 
+2. Tous les hyperparamètres sont découplés du code qui les utilise.
+3. La partie modèle est découplée de la partie data (!).
+4. Un datamodule est partageable et réutilisable.
 
 Une fois tout paramétré, il suffit de lancer:
 
