@@ -7,7 +7,6 @@ import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
 import segmentation_models_pytorch as smp
-from test_net import LightningNetwork
 from utils.init import init_optimizer, init_scheduler
 
 
