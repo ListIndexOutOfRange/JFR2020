@@ -11,13 +11,13 @@
 
 <p align="center">
     <!-- Last Master Commit-->
-    <img src="https://img.shields.io/github/last-commit/the-dharma-bum/MicroNet?label=last%20master%20commit&style=flat-square"
+    <img src="https://img.shields.io/github/last-commit/the-dharma-bum/JFR2020?label=last%20master%20commit&style=flat-square"
          alt="GitHub last commit">
         <!-- Last Commit-->
-    <img src="https://img.shields.io/github/last-commit/the-dharma-bum/MicroNet/master?style=flat-square"
+    <img src="https://img.shields.io/github/last-commit/the-dharma-bum/JFR2020/master?style=flat-square"
          alt="GitHub last commit">
     <!-- Commit Status -->
-    <img src="https://img.shields.io/github/commit-status/the-dharma-bum/MicroNet/improve_logging/0c8c2d6e5363b479344983c564c6dcc27834390a?style=flat-square"
+    <img src="https://img.shields.io/github/commit-status/the-dharma-bum/JFR2020/master/eca2cb36cf952f86dcd3fc9112890c92913f8b60?style=flat-square"
          alt="GitHub commit status">
 </p>
 
