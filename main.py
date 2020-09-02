@@ -21,14 +21,11 @@ def make_config():
     criterion = cfg.Criterion()
     return cfg.Model(network, optimizer, scheduler, criterion)
 
-
 def init_data():
     return DicomDataModule(cfg.Dataloader())
 
-
 def init_model(config):
     return  LightningModel(config)
-
 
 def init_trainer():
     """ Init a Lightning Trainer using from_argparse_args
@@ -65,5 +62,5 @@ def test(path):
 
 if __name__ == '__main__':
     run_training()
-    #run_training()
+    # test('./lightning_logs/version_') 
 
