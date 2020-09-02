@@ -44,6 +44,26 @@ Modèle et entrainement basé sur [Pytorch Lightning](https://github.com/PyTorch
 <!--
 +----------------------------------------------------------------------------------------------------+
 |                                                                                                    |
+|                                                DEVNOTE                                             |
+|                                                                                                    |
++----------------------------------------------------------------------------------------------------+
+ -->
+
+# NOTE POUR LES CONTRIBUTEURS
+
+Lorsque vous participez à ce projet, penser à: 
+
+1. Développer en dehors de la branche master
+2. Faire des commits petits à réguliers
+3. Mettre à jour les badges, notamment la branche du dernier commit
+4. Dès qu'on développe une feature ou un bugfix: mettre à jour le tableau correspond
+5. Dès qu'une feature est prête, merge sur master
+6. Dès qu'on merge sur master, mettre à jour le tableau correspondant
+
+
+<!--
++----------------------------------------------------------------------------------------------------+
+|                                                                                                    |
 |                                          TABLE OF CONTENTS                                         |
 |                                                                                                    |
 +----------------------------------------------------------------------------------------------------+
@@ -73,19 +93,21 @@ Modèle et entrainement basé sur [Pytorch Lightning](https://github.com/PyTorch
 
 ## New features:
 
-| Features                                                 |      Status      |      Type    |
+| Features                                                 |      Status      |     Owner    |
 |----------------------------------------------------------|:----------------:|:------------:|
-| Dataloader                                               |  TO DO           |   Feature    |
-| Dataloader: load dcm par dossier (ie par patient)        |  TO DO           |   Feature    |
-| Dataloader: rescale correct                              |  TO DO           |   Feature    |
-| Dataloader: normalisation basée sur l'histogramme        |  TO DO           |   Feature    |
-| Dataloader: suppression des coupes inutiles              |  TO DO           |   Feature    |
-| Dataloader: crop centré sur le coeur                     |  TO DO           |   Feature    |
+| Dataloader                                               |  TO DO           |              |
+| Dataloader: load dcm par dossier (ie par patient)        |  TO DO           |              |
+| Dataloader: rescale correct                              |  TO DO           |              |
+| Dataloader: normalisation basée sur l'histogramme        |  TO DO           |              |
+| Dataloader: suppression des coupes inutiles              |  TO DO           |              |
+| Dataloader: crop centré sur le coeur                     |  TO DO           |              |
 
 
 ## Bugfixes:
 
-- Rien pour l'instant.
+| Bugfixes                                                 |      Status      |     Owner    |
+|----------------------------------------------------------|:----------------:|:------------:|
+| Rien pour l'instant                                      |                  |              |
 
 <!--
 +----------------------------------------------------------------------------------------------------+
@@ -112,20 +134,13 @@ Modèle et entrainement basé sur [Pytorch Lightning](https://github.com/PyTorch
 # Installation
 [(Back to top)](#table-of-contents)
 
-To use this project, first clone the repo on your device using the command below:
-
-```git init```
+Clonez le repo:
 
 ```git clone https://github.com/the-dharma-bum/jfr2020```
 
-Ce projet nécessite fastai et pytorch lightning. 
-Pour s'assurer que tout se déroule bien, essayer: 
+Installer toutes les dépendances:
 
-```apt install gcc git pip```
-
-```pip install fastai```
-
-```pip install pytorch-lightning```
+``` pip install requirements.txt ```
 
 
 <!--
