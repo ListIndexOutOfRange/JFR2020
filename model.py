@@ -58,7 +58,8 @@ class LightningModel(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = self.criterion(y_hat, y)
-        result = pl.TrainResult(loss)
+        result = pl.TrainResult(loss, early_stop_on=loss, checkpoint_on=loss)
+        result.log('train_loss', loss)
         return result
 
     def validation_step(self, batch, batch_idx):
