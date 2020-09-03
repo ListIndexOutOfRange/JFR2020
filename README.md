@@ -71,13 +71,13 @@ Lorsque vous participez à ce projet, penser à:
 
 # SOMMAIRE
 
-- [A Faire](#a_faire)
+- [A Faire](#a-faire)
      - [New Features](#new-features)
      - [Bugfixes](#bugfixes)
 - [Last Commit Changes Log](#last-commit-changes-log)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Intégration à fastai](#integration-fastai)
+- [Intégration à fastai](#integration-a-fastai)
 
 
 <!--
