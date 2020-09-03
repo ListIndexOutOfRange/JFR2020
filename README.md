@@ -71,12 +71,13 @@ Lorsque vous participez à ce projet, penser à:
 
 # SOMMAIRE
 
-- [A Faire](#to-do-for-next-release)
+- [A Faire](#a_faire)
      - [New Features](#new-features)
      - [Bugfixes](#bugfixes)
 - [Last Commit Changes Log](#last-commit-changes-log)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Intégration à fastai](#integration-fastai)
 
 
 <!--
@@ -89,7 +90,7 @@ Lorsque vous participez à ce projet, penser à:
 
 
 # A faire
-[(Back to top)](#table-of-contents)
+[(Back to top)](#sommaire)
 
 ## New features:
 
@@ -132,7 +133,7 @@ Lorsque vous participez à ce projet, penser à:
  -->
 
 # Installation
-[(Back to top)](#table-of-contents)
+[(Back to top)](#sommaire)
 
 Clonez le repo:
 
@@ -152,7 +153,7 @@ Installer toutes les dépendances:
  -->
 
 # Usage
-[(Back to top)](#table-of-contents)
+[(Back to top)](#sommaire)
 
 ![](./img/arch.png)
 
@@ -194,10 +195,46 @@ Quelques paramètres utiles:
 Si vous voulez débuguez mais que fast_dev_run ne vous convient pas (par exemple si vous voulez voir ce qu'il se passe entre deux époques), vous pouvez utiliser:
 
 - ```--limit_train_batches i --limit_val_batches j --max_epochs k```
-
-i,j,k étant bien sûr trois entiers de votre choix.
-
-
+     
+     i,j,k étant bien sûr trois entiers de votre choix.
 
 
 
+
+# Intégration à fastai
+[(Back to top)](#sommaire)
+
+Il est est très facile d'utiliser la procédure d'entraînement de fastai à partir de ce code. 
+
+En ayant instancié 
+
+- un modèle (définit dans model.py) comme ceci:
+``` 
+from model import LightningModel
+
+model = LightningModel(config)
+```
+(où config est une dataclass Model définit dans config.py)
+
+- un datamodule (définit dans datamodule.py) comme ceci:
+``` 
+from datamodule import DicomDataModule
+
+dm = DicomDataModule(config)
+```
+(où config est une dataclass Dataloader définit dans config.py)
+
+Il suffit de créer un object Dataloaders:
+```
+from fastai.vision.all import DataLoaders
+
+data = Dataloaders(dm.train_dataloader(), dm.val_dataloader()).cuda()
+```
+
+On peut alors définir un Learner et le fit, par exemple:
+```
+learn = Learner(data, model, loss_func=F.cross_entropy, opt_func=Adam, metrics=accuracy)
+learn.fit_one_cycle(1, 0.001)
+```
+
+Ceci permet alors d'utiliser toutes les fonctionnalités de fastai (callbacks, transforms, visualizations ...).
