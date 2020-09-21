@@ -45,6 +45,42 @@ is equivalent to:
 
 from dataclasses import dataclass, field
 
+# +-------------------------------------------------------------------------------------+ #
+# |                                                                                     | #
+# |                                   PREPROCESSING CONFIG                              | #
+# |                                                                                     | #
+# +-------------------------------------------------------------------------------------+ #
+
+@dataclass
+class Preprocess:
+
+    """ Defines input/output paths for preprocessing json/nifti data and parameters for 
+        mask creation and cropping. 
+
+        - max_depth: since several nifti files are associated with one json file, 
+                     we keep the biggest one with respect to max_depth, that is 
+                     the biggest available with less slices than max_depth. 
+        
+        - cube_side: when making a mask from an annotation, we 'draw' a white cube around it.
+                     Here one can specify this cube side length.
+                     This will be used to process a logical AND with a threshold mask.
+
+        - factor: when removing useless slices we delete the ones with a mean intensity too 
+                  far from the scan standart deviation. This factor allows to control the severity
+                  with which one slice is saw as an outlier.
+
+        - steps: list of int specifying which preprocessing steps to perform:
+                 1. selecting couples (json_path, nifti_path) and making and saving masks.
+                 2. cropping and saving scans and masks (3d).
+    """
+    input_dir: str = "../sficv/"
+    output_dir: str = "/media/almotasim/DATA/JFR2020/"
+    max_depth: int = 500
+    cube_side: int = 10
+    factor:    int = 2
+    steps: list = field(default_factory = lambda: [1,2])
+
+
 
 # +-------------------------------------------------------------------------------------+ #
 # |                                                                                     | #

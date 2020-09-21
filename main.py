@@ -5,6 +5,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateLogger
 from model import LightningModel
 from datamodule import DicomDataModule
+from preprocess import Preprocess
 import config as cfg
 
 
@@ -46,6 +47,12 @@ def init_trainer():
 # |                                                                                     | #
 # +-------------------------------------------------------------------------------------+ #
 
+
+def run_preprocessing():
+    config = cfg.Preprocess()
+    preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
+    preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor)
+
 def run_training():
     """ Instanciate a model and a trainer and run trainer.fit(model) """
     data   = init_data()
@@ -61,6 +68,7 @@ def test(path):
 
 
 if __name__ == '__main__':
-    run_training()
+    run_preprocessing()
+    # run_training()
     # test('./lightning_logs/version_') 
 
