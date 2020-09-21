@@ -46,8 +46,17 @@ class LightningModel(pl.LightningModule):
         # self.net = LightningNetwork()
         self.net = smp.Unet('resnet18', in_channels=1, classes=1, activation='sigmoid')
 
-    def forward(self, x):
-        return self.net(x)
+    # TODO handle list as input instead of torch Tensor: 
+    #   1. forward          : DONE
+    #   2. training_step    : |
+    #   3. validation_step  : |-> need to work on the loss computation
+    #   4. test_step        : |
+
+    def forward(self, scan_list): # list because of different input sizes
+        predicted_masks = []
+        for scan in scan_list:
+            predicted_mask.append(self.net(scan))
+        return predicted_masks
 
     def configure_optimizers(self):
         optimizer = init_optimizer(self.net, self.config.optimizer)
@@ -55,25 +64,25 @@ class LightningModel(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
+        scans, true_masks = batch
+        predicted_masks = self(scans)
+        loss = self.criterion(predicted_masks, true_masks)
         result = pl.TrainResult(loss, early_stop_on=loss, checkpoint_on=loss)
         result.log('train_loss', loss)
         return result
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
+        scans, true_masks = batch
+        predicted_masks = self(scans)
+        loss = self.criterion(predicted_masks, true_masks)
         result = pl.EvalResult(checkpoint_on=loss)
         result.log('val_loss', loss)
         return result
 
     def test_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
+        scans, true_masks = batch
+        predicted_masks = self(scans)
+        loss = self.criterion(predicted_masks, true_masks)
         result = pl.EvalResult()
         result.log('test_loss', loss)
         return result

@@ -82,6 +82,7 @@ class Preprocess:
 
 
 
+
 # +-------------------------------------------------------------------------------------+ #
 # |                                                                                     | #
 # |                                   DATALOADER CONFIG                                 | #
@@ -95,13 +96,14 @@ class Dataloader:
     - Batch sizes can be found automatically by Lightning (ie the largest size that fits into memory)
     by using --auto_scale_batch_size binsearch.
     Note that this doesn't work while training across multiple GPUs
+
     - Num Workers should be 4*(nb GPUs). 
     """
     
-    image_rootdir: str = '../sample_isbi2012/train/image/'
-    mask_rootdir: str = '../sample_isbi2012/train/label/'
-    train_batch_size: int = 32
-    val_batch_size: int = 32
+    scan_rootdir: str = '/media/almotasim/DATA/JFR2020/scans/'
+    mask_rootdir: str = '/media/almotasim/DATA/JFR2020/masks'
+    train_batch_size: int = 1
+    val_batch_size: int = 1
     num_workers: int = 4
 
 

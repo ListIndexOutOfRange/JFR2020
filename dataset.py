@@ -1,33 +1,34 @@
 import os
+import numpy as np
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data.dataset import Dataset
 
 
-class ISBIDataset(Dataset):
+class JFRDataset(Dataset):
     """
     Sample Pytorch Dataset. We just overwrite __getitem__ and __len__ methods.
     """
-    def __init__(self, img_root=None, label_root=None, train=True,
+    def __init__(self, scan_root=None, mask_root=None, train=True,
                  transform=None, target_transform=None):
         
-        self.img_root, self.label_root = img_root,  label_root
-        self.img_list   = sorted(os.listdir(img_root))
-        self.label_list = sorted(os.listdir(label_root))
+        self.scan_root, self.mask_root = scan_root,  mask_root
+        self.scan_list = sorted(os.listdir(scan_root))
+        self.mask_list = sorted(os.listdir(mask_root))
         self.transform, self.target_transform  = transform, target_transform
         self.train = train
          
     def __getitem__(self, index):
-        image = Image.open(os.path.join(self.img_root, self.img_list[index]))
+        scan = np.load(os.path.join(self.scan_root, self.scan_list[index]))
         if self.transform is not None:
-            image = self.transform(image)
+            scan = self.transform(scan)
         if self.train:
-            label = Image.open(os.path.join(self.label_root, self.label_list[index]))
+            mask = np.load(os.path.join(self.mask_root, self.mask_list[index]))
             if self.target_transform is not None:
-                label = self.target_transform(label)
-            return image, label
+                mask = self.target_transform(mask)
+            return scan, mask
         else:
-            return image
+            return scan
 
     def __len__(self):
-        return len(self.img_list)
+        return len(self.scan_list)
