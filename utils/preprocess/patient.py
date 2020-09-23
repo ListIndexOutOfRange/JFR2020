@@ -20,21 +20,17 @@ class Patient:
 		assert self.scan_voxel_array.shape[0] == self.scan_voxel_array.shape[1]
 		self.side_length      = self.scan_voxel_array.shape[0]
 		self.nb_slices		  = self.scan_voxel_array.shape[2]
-		self.annotations      = self.get_annotations(json_path)
+		self.annotations      = sorted(self.get_annotations(json_path),key=lambda x: x[2])
 		self.annotations_mask = np.zeros(shape=self.scan_voxel_array.shape)
 		self.threshold_mask   = np.zeros(shape=self.scan_voxel_array.shape)
 		self.mask_voxel_array = None # will be created by a call to self.make_mask()
 		self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
-		self.intensity_min, self.intensity_max = 0., 0.
-
 
 	@property
 	def rescaling(self):
 	    # Some scans have offsetted pixel values.
-	    if np.max(self.mean_intensity_stack) < -600:
-	        return 604
-	    if np.min(self.mean_intensity_stack) > 0:
-	        return -420
+	    if np.max(self.mean_intensity_stack) < -600: return 604
+	    if np.min(self.mean_intensity_stack) > 0: return -420
 	    return 0
 
 	def rescale(self, mode='up'): # can be up or down
@@ -44,25 +40,23 @@ class Patient:
 			self.scan_voxel_array -= self.rescaling
 		self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
 
-
 	def get_voxel_array(self, nifti_path):
-	    """ From a nifti path returns a 3D voxel array. """
-	    scan = nib.load(nifti_path)
-	    # The nifti data are 4ds, with one being of size 1 or 2. 
-	    array_4d = scan.get_fdata()
-	    if array_4d.shape[3] == 1:
-	        return np.squeeze(array_4d, axis=3)
-	    else:
-	        return array_4d[:,:,:,0]
-
+		""" From a nifti path returns a 3D voxel array. """
+		scan = nib.load(nifti_path)
+		# The nifti data are 4ds, with one being of size 1 or 2. 
+		array_4d = scan.get_fdata()
+		if array_4d.shape[3] == 1:
+			return np.squeeze(array_4d, axis=3)
+		return array_4d[:,:,:,0]
 
 	def get_annotations(self, json_path):
-	    """ From a json paths returns a list of triplets [(x,y,z)]
+	    """ From a json paths returns a list of triplets [(x,y,z)].
 	        Each of this triplet is an annotation.
 	    """
 	    with open(json_path) as json_file:
 	        data = json.load(json_file)
 	        annotations = []
+			# rename key so that we can retrieve data from any json
 	        for key in data.keys():
 	            if key.isdigit():
 	                data['annotations'] = data.pop(key)
@@ -73,15 +67,13 @@ class Patient:
 	                annotations.append((x_coord, y_coord, z_coord))
 	    return annotations
 
-
 	def make_threshold_mask(self):
 	    for slice_index in range(self.nb_slices):
 	        self.threshold_mask[:,:,slice_index] = clear_border(self.scan_voxel_array[:,:,slice_index] > 130)
 
-
 	def make_one_annotation_mask(self, annotation, cube_side):
 	    """ Make a mask from a triplet (x,y,z) by
-	        putting white voxels in a cube of side 10 arround the annotated pixel.
+	        putting white voxels in a cube of side cube_side arround the annotated pixel.
 	    """
 	    x,y,z = annotation
 	    x,y = int(x), int(y)
@@ -94,36 +86,37 @@ class Patient:
 	            for x_idx in x_range: 
 	                self.annotations_mask[y_idx,x_idx,z_idx] = 1
 
-
 	def make_annotations_mask(self, cube_side):
 		for annotation in self.annotations:
 			self.make_one_annotation_mask(annotation, cube_side)
-
 
 	def make_mask(self, cube_side):
 		""" Logical AND between the annotation mask and the threshold mask. """
 		self.make_threshold_mask()
 		self.make_annotations_mask(cube_side)
 		self.mask_voxel_array = np.logical_and(self.threshold_mask, self.annotations_mask)
-	
 
+	def get_z_range_by_annotations(self, margin=5):
+		""" Returns the lowest and highest slices with annotations plus a specified margin.
+			This margin prevent annotations from being in the edge of a cropped cube.
+		"""
+		min_z = max(0, self.annotations[0][2]-margin)
+		max_z = min(self.nb_slices, self.annotations[-1][2]+margin)
+		return min_z, max_z
+	
 	def is_intensity_regular(self, slice_index, intensity_min, intensity_max):
 		return (intensity_min <= self.mean_intensity_stack[slice_index] <= intensity_max)
 
-	
-	def delete_outliers(self, intensity_min, intensity_max):
-	    """ Remove slices that have an mean intensity lower than -600 or greater than -150 """
-	    slice_index = 0
-	    while slice_index < self.nb_slices and not self.is_intensity_regular(slice_index, intensity_min, intensity_max):
-	        slice_index += 1
-	    min_z = slice_index
-	    while slice_index < self.nb_slices and self.is_intensity_regular(slice_index, intensity_min, intensity_max):
-	        slice_index += 1
-	    max_z = slice_index-1
-	    self.scan_voxel_array = self.scan_voxel_array[:,:,min_z:max_z]
-	    self.mask_voxel_array = self.mask_voxel_array[:,:,min_z:max_z]
-	    self.nb_slices = max_z - min_z
-
+	def get_z_range_by_intensity(self, intensity_min, intensity_max):
+		""" Remove slices that have an mean intensity lower than intensity_min or greater than intensity_max """
+		slice_index = 0
+		while slice_index < self.nb_slices and not self.is_intensity_regular(slice_index, intensity_min, intensity_max):
+			slice_index += 1
+		min_z = slice_index
+		while slice_index < self.nb_slices and self.is_intensity_regular(slice_index, intensity_min, intensity_max):
+			slice_index += 1
+		max_z = slice_index-1
+		return min_z, max_z
 
 	def get_intensity_range(self, factor):
 		array_intensity_mean = np.mean(self.mean_intensity_stack)
@@ -131,17 +124,27 @@ class Patient:
 		intensity_min = array_intensity_mean - factor*array_intensity_std
 		intensity_max = array_intensity_mean + factor*array_intensity_std
 		return intensity_min, intensity_max
+	
+	def delete_outliers(self, intensity_min, intensity_max, margin, use_annotations=True):
+		min_z_by_intensity, max_z_by_intensity = self.get_z_range_by_intensity(intensity_min, intensity_max)
+		if use_annotations:
+			min_z_by_annotations, max_z_by_annotations = self.get_z_range_by_annotations(margin)
+			min_z = min(min_z_by_intensity, min_z_by_annotations)
+			max_z = max(max_z_by_intensity, max_z_by_annotations)
+		else:
+			min_z, max_z = min_z_by_intensity, max_z_by_intensity
+		self.scan_voxel_array = self.scan_voxel_array[:,:,min_z:max_z]
+		self.mask_voxel_array = self.mask_voxel_array[:,:,min_z:max_z]
+		self.nb_slices = self.scan_voxel_array.shape[2]
 
-
-	def crop_z(self, factor):
+	def crop_z(self, factor, margin):
 	    """ Get the z range to keep by calculating mean and std of intensity values of each slice. """
-	    self.delete_outliers(-600, -150)
+	    self.delete_outliers(-600, -150, margin)
 	    intensity_min, intensity_max = self.get_intensity_range(factor) 
-	    self.delete_outliers(intensity_min, intensity_max)
+	    self.delete_outliers(intensity_min, intensity_max, margin)
 	    
-
 	def crop_xy(self):
-		""" Reduce slice size by keeping a centered square of size old_shape/sqrt(2) """
+		""" Reduce slice size by keeping a centered square of size old_side_length/sqrt(2) """
 		new_side_length = int(self.side_length/math.sqrt(2))
 		center_index = self.side_length//2
 		offset = center_index - new_side_length//2
@@ -155,19 +158,22 @@ class Patient:
 		self.scan_voxel_array = cropped_scan
 		self.mask_voxel_array = cropped_mask
 
-
-	def crop_3d(self, factor):
-	    self.crop_z(factor)
+	def crop_3d(self, factor, margin):
+	    self.crop_z(factor, margin)
 	    self.crop_xy()
-
 
 	def save_scan(self, scan_path):
 		np.save(scan_path, self.scan_voxel_array)
 
-
 	def save_mask(self, mask_path):
 		np.save(mask_path, self.mask_voxel_array)
 
+	def load_scan(self, scan_path):
+		self.scan_voxel_array     = np.load(scan_path)
+		self.side_length      	  = self.scan_voxel_array.shape[0]
+		self.nb_slices		      = self.scan_voxel_array.shape[2]
+		self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
 
-	def load_mask(self, path):
-		self.mask_voxel_array = np.load(path)
+	def load_mask(self, mask_path):
+		self.mask_voxel_array = np.load(mask_path)
+		

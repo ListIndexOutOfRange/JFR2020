@@ -25,6 +25,18 @@ def compare_3_images(image1, image2, image3):
     plots[2].imshow(image3, cmap=plt.cm.bone)
 
 
+def compare_4_images(image1, image2, image3, image4):
+    f, plots = plt.subplots(2,2, figsize=(50,50))
+    plots[0,0].axis('off')
+    plots[0,0].imshow(image1, cmap=plt.cm.bone)
+    plots[0,1].axis('off')
+    plots[0,1].imshow(image2, cmap=plt.cm.bone)
+    plots[1,0].axis('off')
+    plots[1,0].imshow(image3, cmap=plt.cm.bone)
+    plots[1,1].axis('off')
+    plots[1,1].imshow(image4, cmap=plt.cm.bone)
+
+
 def plot_slices(scan, step):
     mean_intensity_stack = scan.mean(axis=(0,1))
     depth = scan.shape[2]

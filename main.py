@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateLogger
 from model import LightningModel
-from datamodule import DicomDataModule
+from datamodule import JFRDataModule
 from preprocess import Preprocess
 import config as cfg
 
@@ -23,7 +23,7 @@ def make_config():
     return cfg.Model(network, optimizer, scheduler, criterion)
 
 def init_data():
-    return DicomDataModule(cfg.Dataloader())
+    return JFRDataModule(cfg.Dataloader())
 
 def init_model(config):
     return  LightningModel(config)
@@ -51,10 +51,10 @@ def init_trainer():
 def run_preprocessing():
     config = cfg.Preprocess()
     preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
-    preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor)
+    preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor, config.margin)
 
 def run_training():
-    """ Instanciate a model and a trainer and run trainer.fit(model) """
+    """ Instanciate a datamodule, a model and a trainer and run trainer.fit(model, data) """
     data   = init_data()
     config = make_config()
     model, trainer = init_model(config), init_trainer()

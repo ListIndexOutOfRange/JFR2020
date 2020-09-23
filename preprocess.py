@@ -55,8 +55,9 @@ class Preprocess:
         for json_path in all_json_paths:
             with open(json_path) as json_file:
                 data = json.load(json_file)
-                if len(data.keys()) > 2:
-                    good_json_paths.append(json_path)
+                for key in data.keys():
+                    if key.isdigit() and len(data[key][0]['labels']) > 0:
+                        good_json_paths.append(json_path)
         return good_json_paths
 
 
@@ -119,7 +120,7 @@ class Preprocess:
             patient.save_mask(output_mask_path)
 
 
-    def step2(self, factor):
+    def step2(self, factor, margin):
         """ Crop scans a masks and store the outputs respectively in 
             OUTPUT_DIR/scans and OUTPUT_DIR/masks/ .
         """
@@ -128,17 +129,17 @@ class Preprocess:
             patient = Patient(self.dataset_paths[i][0], self.dataset_paths[i][1])
             patient.load_mask(mask_path)
             patient.rescale('up') 
-            patient.crop_3d(factor)
+            patient.crop_3d(factor, margin)
             patient.rescale('down') 
             patient.save_scan(output_scan_path)
             patient.save_mask(mask_path)
 
 
-    def preprocess_dataset(self, steps, cube_side=10, factor=2):
+    def preprocess_dataset(self, steps, cube_side=10, factor=2, margin=5):
         self.prepare_output_folders()
         if 1 in steps:
             print("STEP 1: Creating Masks...")
             self.step1(cube_side)
         if 2 in steps:
             print("STEP 2: Cropping Scans & Masks...")
-            self.step2(factor)
+            self.step2(factor, margin)

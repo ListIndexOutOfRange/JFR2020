@@ -69,15 +69,19 @@ class Preprocess:
                   far from the scan standart deviation. This factor allows to control the severity
                   with which one slice is saw as an outlier.
 
+        - margin: since we don't want annotations (ie white pixels) to be on the edge of masks,
+                  we define a margin to add slices on the edge of mask if needed.
+
         - steps: list of int specifying which preprocessing steps to perform:
                  1. selecting couples (json_path, nifti_path) and making and saving masks.
                  2. cropping and saving scans and masks (3d).
     """
-    input_dir: str = "../sficv/"
+    input_dir: str  = "../sficv/"
     output_dir: str = "/media/almotasim/DATA/JFR2020/"
-    max_depth: int = 500
-    cube_side: int = 10
-    factor:    int = 2
+    max_depth: int  = 500
+    cube_side: int  = 10
+    factor:    int  = 2
+    margin:    int  = 10
     steps: list = field(default_factory = lambda: [1,2])
 
 
