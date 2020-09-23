@@ -36,7 +36,7 @@ Implémentation Pytorch du Data Challenge 2020 pour les Journées Françaises de
 Détermination automatique du score calcique sur Scanner 3D
 
 
-Dataloader basé sur [fastaiv2](https://github.com/fastai/fastai)
+Dataloader fait main gérant des couples (json, nifti).
 
 Modèle et entrainement basé sur [Pytorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning).
 
@@ -54,9 +54,9 @@ Modèle et entrainement basé sur [Pytorch Lightning](https://github.com/PyTorch
 Lorsque vous participez à ce projet, penser à: 
 
 1. Développer en dehors de la branche master
-2. Faire des commits petits à réguliers
+2. Faire des commits petits et réguliers
 3. Mettre à jour les badges, notamment la branche du dernier commit
-4. Dès qu'on développe une feature ou un bugfix: mettre à jour le tableau correspond
+4. Dès qu'on développe une feature ou un bugfix: mettre à jour le tableau correspondant
 5. Dès qu'une feature est prête, merge sur master
 6. Dès qu'on merge sur master, mettre à jour le tableau correspondant
 
@@ -97,11 +97,12 @@ Lorsque vous participez à ce projet, penser à:
 | Features                                                 |      Status      |     Owner    |
 |----------------------------------------------------------|:----------------:|:------------:|
 | Dataloader                                               |  TO DO           |              |
-| Dataloader: load dcm par dossier (ie par patient)        |  TO DO           |              |
-| Dataloader: rescale correct                              |  TO DO           |              |
+| Dataloader: load bons couples (jsons,nifti)              |  DONE            |              |
+| Dataloader: rescale correct                              |  DONE            |              |
 | Dataloader: normalisation basée sur l'histogramme        |  TO DO           |              |
-| Dataloader: suppression des coupes inutiles              |  TO DO           |              |
-| Dataloader: crop centré sur le coeur                     |  TO DO           |              |
+| Dataloader: suppression des coupes inutiles              |  DONE            |              |
+| Dataloader: crop centré sur le coeur                     |  DONE            |              |
+| Augmentation                                             |  TO DO           |              |
 
 
 ## Bugfixes:
@@ -121,7 +122,7 @@ Lorsque vous participez à ce projet, penser à:
 
 # Last Commit Changes Log
 
-- initialisation du github
+- Finalisation du preprocessing: wrapping en une fonction agissant sur tout le dataset.
 
 
 <!--
@@ -139,7 +140,7 @@ Clonez le repo:
 
 ```git clone https://github.com/the-dharma-bum/jfr2020```
 
-Installer toutes les dépendances:
+Installer toutes les dépendances (attention ça peut être plutôt long):
 
 ``` pip install requirements.txt ```
 
@@ -163,7 +164,7 @@ Une fois les dataclass de configuration instanciées, une dataclass config peut 
 Ensuite, un objet model (voir model.py) peut être instancié avec cette dataclass config.
 Enfin, ce model est donné à un objet trainer. 
 
-En résumé, l'initilisation se fait en 3 étapes: 
+En résumé, l'initialisation se fait en 3 étapes: 
 - 1. Instanciation d'une configuration
 - 2. Instanciation d'un model à l'aide de l'objet de configuration
 - 3. Instanciation d'un trainer avec un model.
@@ -209,7 +210,7 @@ Il est est très facile d'utiliser la procédure d'entraînement de fastai à pa
 En ayant instancié 
 
 - un modèle (définit dans model.py) comme ceci:
-``` 
+```python
 from model import LightningModel
 
 model = LightningModel(config)
@@ -217,7 +218,7 @@ model = LightningModel(config)
 (où config est une dataclass Model définit dans config.py)
 
 - un datamodule (définit dans datamodule.py) comme ceci:
-``` 
+```python
 from datamodule import DicomDataModule
 
 dm = DicomDataModule(config)
@@ -225,14 +226,14 @@ dm = DicomDataModule(config)
 (où config est une dataclass Dataloader définit dans config.py)
 
 Il suffit de créer un object Dataloaders:
-```
+```python
 from fastai.vision.all import DataLoaders
 
 data = Dataloaders(dm.train_dataloader(), dm.val_dataloader()).cuda()
 ```
 
 On peut alors définir un Learner et le fit, par exemple:
-```
+```python
 learn = Learner(data, model, loss_func=F.cross_entropy, opt_func=Adam, metrics=accuracy)
 learn.fit_one_cycle(1, 0.001)
 ```

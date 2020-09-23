@@ -76,12 +76,13 @@ class Preprocess:
                  1. selecting couples (json_path, nifti_path) and making and saving masks.
                  2. cropping and saving scans and masks (3d).
     """
-    input_dir: str  = "../sficv/"
-    output_dir: str = "/media/almotasim/DATA/JFR2020/"
-    max_depth: int  = 500
-    cube_side: int  = 10
-    factor:    int  = 2
-    margin:    int  = 10
+    input_dir:    str = "../sficv/"
+    output_dir:   str = "/media/almotasim/DATA/JFR2020/"
+    max_depth:    int = 500
+    cube_side:    int = 10
+    factor:       int = 2
+    margin:       int = 10
+    target_depth: int = 64
     steps: list = field(default_factory = lambda: [1,2])
 
 

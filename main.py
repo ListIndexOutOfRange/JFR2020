@@ -48,10 +48,13 @@ def init_trainer():
 # +-------------------------------------------------------------------------------------+ #
 
 
-def run_preprocessing():
+def run_preprocessing(fast=True):
     config = cfg.Preprocess()
     preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
-    preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor, config.margin)
+    if fast:
+        preprocessor.fast_all_steps(config.cube_side, config.factor, config.margin, config.target_depth)
+    else:
+        preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor, config.margin)
 
 def run_training():
     """ Instanciate a datamodule, a model and a trainer and run trainer.fit(model, data) """
