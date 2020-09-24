@@ -6,9 +6,11 @@
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
-import segmentation_models_pytorch as smp
 from utils.init import init_optimizer, init_scheduler
+from utils.model import DeepLabV3_3D
+from utils.losses import DC_and_topk_loss
 
+from pytorch_lightning.metrics import AUC
 
 
 class LightningModel(pl.LightningModule):
@@ -41,22 +43,12 @@ class LightningModel(pl.LightningModule):
         
         super().__init__()
         self.config      = config
-        self.criterion   = torch.nn.BCEWithLogitsLoss()
+        self.criterion   = DC_and_topk_loss({'batch_dice':True, 'smooth':1e-5, 'do_bg':False}, {'k':10})
         self.save_hyperparameters()
-        # self.net = LightningNetwork()
-        self.net = smp.Unet('resnet18', in_channels=1, classes=1, activation='sigmoid')
+        self.net = DeepLabV3_3D(num_classes=2, input_channels=1, resnet='resnet18_os16', last_activation='softmax')
 
-    # TODO handle list as input instead of torch Tensor: 
-    #   1. forward          : DONE
-    #   2. training_step    : |
-    #   3. validation_step  : |-> need to work on the loss computation
-    #   4. test_step        : |
-
-    def forward(self, scan_list): # list because of different input sizes
-        predicted_masks = []
-        for scan in scan_list:
-            predicted_mask.append(self.net(scan))
-        return predicted_masks
+    def forward(self, scan): # list because of different input sizes
+        return self.net(scan)
 
     def configure_optimizers(self):
         optimizer = init_optimizer(self.net, self.config.optimizer)

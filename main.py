@@ -1,5 +1,6 @@
 """ Main Python file to start training """
 
+import os
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateLogger
@@ -52,9 +53,23 @@ def run_preprocessing(fast=True):
     config = cfg.Preprocess()
     preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
     if fast:
-        preprocessor.fast_all_steps(config.cube_side, config.factor, config.margin, config.target_depth)
+        preprocessor.fast_all_steps(config.cube_side, config.factor, config.margin, config.target_depth,
+                                    config.augment_factor, config.augment_proba)
     else:
-        preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor, config.margin)
+        preprocessor.preprocess_dataset(config.steps, config.cube_side, config.factor, config.margin, 
+                                        config.target_depth,config.augment_factor, config.augment_proba)
+
+def test_preprocessing():
+    config = cfg.Preprocess()
+    preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
+    preprocessor.test()
+
+
+def augment():
+    config = cfg.Preprocess()
+    input_dir, output_dir = config.output_dir, os.path.join(config.output_dir, "augmented/")
+    preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
+    preprocessor.augment(input_dir, output_dir, config.augment_factor, config.augment_proba)
 
 def run_training():
     """ Instanciate a datamodule, a model and a trainer and run trainer.fit(model, data) """
@@ -67,11 +82,13 @@ def test(path):
     data    = init_data()
     model   = LightningModel.load_from_checkpoint(path)
     trainer = init_trainer()
-    trainer.test(model, data)
+    trainer.test()
 
 
 if __name__ == '__main__':
-    run_preprocessing()
+    augment()
+    #test_preprocessing()
+    #run_preprocessing()
     # run_training()
     # test('./lightning_logs/version_') 
 

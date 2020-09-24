@@ -7,21 +7,29 @@ import nibabel as nib
 
 from skimage.segmentation import clear_border
 
+from utils.volumentations import *
+
 
 class Patient:
 
-	def __init__(self, json_path, nifti_path):
-		self.scan_voxel_array = self.get_voxel_array(nifti_path)
-		assert self.scan_voxel_array.shape[0] == self.scan_voxel_array.shape[1]
-		self.side_length      = self.scan_voxel_array.shape[0]
-		self.nb_slices		  = self.scan_voxel_array.shape[2]
-		self.annotations      = sorted(self.get_annotations(json_path),key=lambda x: x[2])
-		self.annotations_mask = np.zeros(shape=self.scan_voxel_array.shape)
-		self.threshold_mask   = np.zeros(shape=self.scan_voxel_array.shape)
+	def __init__(self, json_path=None, nifti_path=None):
+		# json and nifti paths can be none in case we just wanna 
+		# init a Patient object to load voxel arrays later.
+		if nifti_path is not None:
+			self.scan_voxel_array = self.get_voxel_array(nifti_path)
+			assert self.scan_voxel_array.shape[0] == self.scan_voxel_array.shape[1]
+			self.side_length      = self.scan_voxel_array.shape[0]
+			self.nb_slices		  = self.scan_voxel_array.shape[2]
+			self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
+			self.threshold_mask   = np.zeros(shape=self.scan_voxel_array.shape)
+		if json_path is not None:
+			self.annotations      = sorted(self.get_annotations(json_path),key=lambda x: x[2])
+			self.annotations_mask = np.zeros(shape=self.scan_voxel_array.shape)
 		self.mask_voxel_array = None # will be created by a call to self.make_mask()
 		self.cutted_scans     = [] # contains cube of same size obtained by cutting original scan
 		self.cutted_masks     = [] # contains cube of same size obtained by cutting original mask
-		self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
+		self.augmented_scan   = [] # will be filled by calling augment()
+		self.augmented_mask   = [] # will be filled by calling augment()
 
 	@property
 	def rescaling(self):
@@ -265,6 +273,40 @@ class Patient:
 			self.cutted_scans.append(self.cut_xy_in_four(cutted_scans[i]))
 			self.cutted_masks.append(self.cut_xy_in_four(cutted_masks[i]))
 
+
+# +-------------------------------------------------------------------------------------+ #
+# |                                   	  AUGMENT  		                                | #
+# +-------------------------------------------------------------------------------------+ #
+
+	def augment(self, p, cutted_before=True):
+		augmentation = Compose([
+							ElasticTransform((0, 0.25)),
+							Rotate((-15,15),(-15,15),(-15,15)),
+							Flip(0),
+							Flip(1),
+							Flip(2),
+							RandomRotate90((0,1)),
+							RandomGamma(),
+							GaussianNoise(),
+							Normalize(always_apply=True)
+						], p=p)
+		data = {'image': self.scan_voxel_array, 'mask': self.mask_voxel_array}
+		aug_data = augmentation(**data)
+		self.augmented_scan, self.augmented_mask = aug_data['image'], aug_data['mask']
+
+# +-------------------------------------------------------------------------------------+ #
+# |                                   	   I/O  		                                | #
+# +-------------------------------------------------------------------------------------+ #
+
+	def load_scan(self, scan_path):
+		self.scan_voxel_array     = np.load(scan_path)
+		self.side_length      	  = self.scan_voxel_array.shape[0]
+		self.nb_slices		      = self.scan_voxel_array.shape[2]
+		self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
+
+	def load_mask(self, mask_path):
+		self.mask_voxel_array = np.load(mask_path)
+
 	def save_scan(self, scan_path):
 		np.save(scan_path, self.scan_voxel_array)
 
@@ -284,13 +326,12 @@ class Patient:
 			np.save(f"{name}_[z{i}_top_right]", self.cutted_masks[i]['top_right'])
 			np.save(f"{name}_[z{i}_bot_left]",  self.cutted_masks[i]['bot_left'])
 			np.save(f"{name}_[z{i}_bot_right]", self.cutted_masks[i]['bot_right'])
-		
-	def load_scan(self, scan_path):
-		self.scan_voxel_array     = np.load(scan_path)
-		self.side_length      	  = self.scan_voxel_array.shape[0]
-		self.nb_slices		      = self.scan_voxel_array.shape[2]
-		self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
 
-	def load_mask(self, mask_path):
-		self.mask_voxel_array = np.load(mask_path)
+	def save_augmented_scan(self, name):
+		np.save(name, self.augmented_scan)
+	
+	def save_augmented_mask(self, name):
+		np.save(name, self.augmented_mask)
+		
+
 		

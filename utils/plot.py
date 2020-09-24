@@ -14,6 +14,12 @@ def window_image(image, window_center, window_width):
     window_image[window_image > img_max] = img_max
     return window_image
 
+def compare_2_images(image1, image2):
+    f, plots = plt.subplots(1,2, figsize=(50,50))
+    plots[0].axis('off')
+    plots[0].imshow(image1, cmap=plt.cm.bone)
+    plots[1].axis('off')
+    plots[1].imshow(image2, cmap=plt.cm.bone)
 
 def compare_3_images(image1, image2, image3):
     f, plots = plt.subplots(1,3, figsize=(50,50))

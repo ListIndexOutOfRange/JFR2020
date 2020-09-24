@@ -1,9 +1,6 @@
 import os
-import math
 import numpy as np
-import pickle
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 
 import json
 import nibabel as nib
@@ -145,8 +142,68 @@ class Preprocess:
             patient.save_cutted_scans(output_scan_path[:-4])
             patient.save_cutted_masks(mask_path[:-4])
 
-    def fast_all_steps(self, cube_side=10, factor=2, margin=5, target_depth=64):
-        """ Performs all steps faster by avoiding intermediate save/load. """
+    #TODO: for now we pass input_dir and ouput_dir to do augment after preprocess but it
+    #      shouldn't be this way.
+    def augment(self, input_dir, output_dir, augment_factor, augment_proba):
+        """ From each couple (scan,mask) generates as many augmented
+            new couples as augment_factor.
+        """
+        self.output_dir = output_dir
+        self.prepare_output_folders()
+        scan_root = os.path.join(input_dir, "scans/")
+        mask_root = os.path.join(input_dir, "masks/")
+        scan_list = os.listdir(scan_root)
+        mask_list = os.listdir(mask_root)
+        assert len(scan_list) == len(mask_list)
+        dataset_length = len(scan_list)
+        for i in tqdm(range(dataset_length)):
+            patient = Patient()
+            patient.load_scan(os.path.join(scan_root, scan_list[i]))
+            patient.load_mask(os.path.join(mask_root, mask_list[i]))
+            for j in range(augment_factor):
+                augmented_scan_name = f"{scan_list[i][:-4]}_{j}"
+                augmented_mask_name = f"{mask_list[i][:-4]}_{j}"
+                augmented_scan_path = os.path.join(output_dir, "scans/", augmented_scan_name)
+                augmented_mask_path = os.path.join(output_dir, "masks/", augmented_mask_name)
+                patient.augment(augment_proba)
+                patient.save_augmented_scan(augmented_scan_path)
+                patient.save_augmented_mask(augmented_mask_path)
+
+    #TODO: this function is bugged because augment applies on voxel_arrays instead of cutted cubes
+    def fast_all_steps(self, cube_side=10, factor=2, margin=5, target_depth=64, augment_factor=10, augment_proba=0.7):
+        """ Performs all steps (1,2,3 + augment) faster by avoiding intermediate save/load. """
+        self.prepare_output_folders()
+        for i in tqdm(range(len(self.dataset_paths))):
+            json_path, nifti_path = self.dataset_paths[i] 
+            output_scan_path, mask_path = self.output_paths[i][0], self.output_paths[i][1]
+            patient = Patient(json_path, nifti_path)
+            patient.make_mask(cube_side)
+            patient.rescale('up') 
+            patient.crop_3d(factor, margin)
+            patient.rescale('down') 
+            patient.cut(target_depth)
+            for j in range(augment_factor):
+                augmented_scan_path = f"{output_scan_path[:-4]}_{j}"
+                augmented_mask_path = f"{mask_path[:-4]}_{j}"
+                patient.augment(augment_proba)
+                patient.save_augmented_scan(augmented_scan_path)
+                patient.save_augmented_mask(augmented_mask_path)
+
+    def preprocess_dataset(self, steps, cube_side=10, factor=2, margin=5, target_depth=64, augment_factor=10, augment_proba=0.7):
+        self.prepare_output_folders()
+        if 1 in steps:
+            print("STEP 1: Creating Masks...")
+            self.step1(cube_side)
+        if 2 in steps:
+            print("STEP 2: Cropping Scans & Masks...")
+            self.step2(factor, margin)
+        if 3 in steps:
+            print("STEP 3: Cutting Scans & Masks...")
+            self.step3(target_depth)
+        if 'augment' in steps:
+            self.augment(augment_factor, augment_proba)
+
+    def test(self, cube_side=10, factor=2, margin=5, target_depth=64, augment_factor=10, augment_proba=0.7):
         self.prepare_output_folders()
         for i in tqdm(range(len(self.dataset_paths))):
             json_path, nifti_path = self.dataset_paths[i] 
@@ -159,15 +216,3 @@ class Preprocess:
             patient.cut(target_depth)
             patient.save_cutted_scans(output_scan_path[:-4])
             patient.save_cutted_masks(mask_path[:-4])
-
-    def preprocess_dataset(self, steps, cube_side=10, factor=2, margin=5, target_depth=64):
-        self.prepare_output_folders()
-        if 1 in steps:
-            print("STEP 1: Creating Masks...")
-            self.step1(cube_side)
-        if 2 in steps:
-            print("STEP 2: Cropping Scans & Masks...")
-            self.step2(factor, margin)
-        if 3 in steps:
-            print("STEP 3: Cutting Scans & Masks...")
-            self.step3(target_depth)

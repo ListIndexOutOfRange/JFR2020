@@ -13,7 +13,6 @@ class JFRDataModule(pl.LightningDataModule):
     def __init__(self, config):
         super().__init__()
         self.config = config # instance of a Dataloader dataclass (see config.py)
-        #TODO: add augmentation bellow
         self.transform_scan = None
         self.transform_mask = None
 
@@ -38,36 +37,14 @@ class JFRDataModule(pl.LightningDataModule):
                                          train = False,
                                          transform = self.transform_scan)
 
-    @staticmethod
-    def collate(batch):
-        """
-        Override `default_collate` https://pytorch.org/docs/stable/_modules/torch/utils/data/dataloader.html#DataLoader
-
-        Reference:
-        def default_collate(batch) at https://pytorch.org/docs/stable/_modules/torch/utils/data/dataloader.html#DataLoader
-        https://discuss.pytorch.org/t/how-to-create-a-dataloader-with-variable-size-input/8278/3
-        https://github.com/pytorch/pytorch/issues/1512
-
-        We need our own collate function that wraps things up (scan, mask) because of the varying z shape.
-
-        :param batch: list of tuples (scan, mask)
-        :return: 3 elements: list of tensors of scans, list of tensors of masks.
-        """
-        # list insted of torck stack because of varying length
-        # scans = torch.stack([item[0] for item in batch])
-        # masks = torch.stack([item[1] for item in batch])
-        scans = [item[0] for item in batch]
-        masks = [item[1] for item in batch] 
-        return scans, masks
-
     def train_dataloader(self):
-        return DataLoader(self.jfr_train, num_workers = self.config.num_workers, collate_fn=self.collate,
+        return DataLoader(self.jfr_train, num_workers = self.config.num_workers,
                           batch_size = self.config.train_batch_size, shuffle = True)
 
     def val_dataloader(self):
-        return DataLoader(self.jfr_val, num_workers = self.config.num_workers, collate_fn=self.collate,
+        return DataLoader(self.jfr_val, num_workers = self.config.num_workers, 
                           batch_size = self.config.val_batch_size, shuffle = False)
 
     def test_dataloader(self):
-        return DataLoader(self.jfr_test, num_workers = self.config.num_workers, collate_fn=self.collate,
+        return DataLoader(self.jfr_test, num_workers = self.config.num_workers,
                           batch_size = self.config.val_batch_size, shuffle = False)

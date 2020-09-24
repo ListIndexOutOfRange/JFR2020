@@ -72,18 +72,33 @@ class Preprocess:
         - margin: since we don't want annotations (ie white pixels) to be on the edge of masks,
                   we define a margin to add slices on the edge of mask if needed.
 
-        - steps: list of int specifying which preprocessing steps to perform:
+        - target_depth: since each scan (and mask) has a unique depth, from each scan we generate
+                        a certain number of cubes of depth equals to target_depth by padding+cutting
+                        a given scan.
+
+        - steps: list of int or str specifying which preprocessing steps to perform:
                  1. selecting couples (json_path, nifti_path) and making and saving masks.
                  2. cropping and saving scans and masks (3d).
+                 3. creating fixed size cube by doing z padding -> z cutting -> x,y cutting.
+                 4. augment data
+        
+        - augment_factor: increase the dataset size by a factor of augment_factor.
+
+        - augment_proba: an augmentation policy is a composition of several augmentation functions,
+                         applied with a probability augment_proba.
+                         e.g if augment_proba=0.5, 50% of the inputed scan will be left unchanged by
+                         augmentation.
     """
-    input_dir:    str = "../sficv/"
-    output_dir:   str = "/media/almotasim/DATA/JFR2020/"
-    max_depth:    int = 500
-    cube_side:    int = 10
-    factor:       int = 2
-    margin:       int = 10
-    target_depth: int = 64
-    steps: list = field(default_factory = lambda: [1,2])
+    input_dir:       str = "../sficv/"
+    output_dir:      str = "/media/almotasim/DATA/JFR2020_test/"
+    max_depth:       int = 500
+    cube_side:       int = 10
+    factor:          int = 2
+    margin:          int = 10
+    target_depth:    int = 64
+    augment_factor:  int = 20
+    augment_proba: float = 0.8 
+    steps: list = field(default_factory = lambda: [1,2,3])
 
 
 
@@ -105,11 +120,11 @@ class Dataloader:
     - Num Workers should be 4*(nb GPUs). 
     """
     
-    scan_rootdir: str = '/media/almotasim/DATA/JFR2020/scans/'
-    mask_rootdir: str = '/media/almotasim/DATA/JFR2020/masks'
-    train_batch_size: int = 1
-    val_batch_size: int = 1
-    num_workers: int = 4
+    scan_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/masks/'
+    mask_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/masks/'
+    train_batch_size: int = 2
+    val_batch_size:   int = 2
+    num_workers:      int = 4
 
 
 
