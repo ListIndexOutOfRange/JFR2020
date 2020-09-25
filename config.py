@@ -89,8 +89,8 @@ class Preprocess:
                          e.g if augment_proba=0.5, 50% of the inputed scan will be left unchanged by
                          augmentation.
     """
-    input_dir:       str = "../sficv/"
-    output_dir:      str = "/media/almotasim/DATA/JFR2020_test/"
+    input_dir:       str = "/your/path/here/sficv/"
+    output_dir:      str = "/your/path/here/preprocessed/"
     max_depth:       int = 500
     cube_side:       int = 10
     factor:          int = 2
@@ -120,8 +120,8 @@ class Dataloader:
     - Num Workers should be 4*(nb GPUs). 
     """
     
-    scan_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/scans/'
-    mask_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/masks/'
+    scan_rootdir: str = '/your/path/here/augmented/scans/'
+    mask_rootdir: str = '/your/path/here/augmented/masks/'
     train_batch_size: int = 3
     val_batch_size:   int = 3
     num_workers:      int = 4

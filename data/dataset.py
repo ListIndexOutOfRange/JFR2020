@@ -18,8 +18,7 @@ class JFRDataset(Dataset):
         self.train = train
          
     def __getitem__(self, index):
-        scan = np.load(os.path.join(self.scan_root, self.scan_list[index]))
-        scan = scan.astype(np.float32)
+        scan = np.load(os.path.join(self.scan_root, self.scan_list[index])).astype(np.float32)
         if self.transform is not None:
             scan = self.transform(scan)
         if self.train:
