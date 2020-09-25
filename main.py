@@ -5,8 +5,8 @@ from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateLogger
 from model import LightningModel
-from datamodule import JFRDataModule
-from preprocess import Preprocess
+from data import JFRDataModule
+from data.preprocess import Preprocess
 import config as cfg
 
 
