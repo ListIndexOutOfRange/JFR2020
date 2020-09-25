@@ -6,9 +6,9 @@
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
-from utils.init import init_optimizer, init_scheduler
-from utils.model import DeepLabV3_3D
-from utils.losses import DC_and_topk_loss
+from models.init import init_optimizer, init_scheduler
+from models.net import DeepLabV3_3D
+from models.losses import DC_and_topk_loss
 
 from pytorch_lightning.metrics import AUC
 

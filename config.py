@@ -120,10 +120,10 @@ class Dataloader:
     - Num Workers should be 4*(nb GPUs). 
     """
     
-    scan_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/masks/'
+    scan_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/scans/'
     mask_rootdir: str = '/media/almotasim/DATA/JFR2020_test/augmented/masks/'
-    train_batch_size: int = 2
-    val_batch_size:   int = 2
+    train_batch_size: int = 3
+    val_batch_size:   int = 3
     num_workers:      int = 4
 
 
