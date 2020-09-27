@@ -90,15 +90,18 @@ def random_crop(img, crop_height, crop_width, crop_depth, h_start, w_start, d_st
 
 
 def normalize(img, range_norm=True):
-    if range_norm:
-        mn = img.min()
-        mx = img.max()
-        img = (img - mn) / (mx - mn)
-    mean = img.mean()
-    std = img.std()
-    denominator = np.reciprocal(std)
-    img = (img - mean) * denominator
-    return img
+    if len(np.unique(img))==2 and (1 in img or 0 in img):
+        return img
+    else :
+        if range_norm:
+            mn = img.min()
+            mx = img.max()
+            img = (img - mn) / (mx - mn)
+        mean = img.mean()
+        std = img.std()
+        denominator = np.reciprocal(std)
+        img = (img - mean) * denominator
+        return img
 
 
 def pad(image, new_shape, border_mode="constant", value=0):
