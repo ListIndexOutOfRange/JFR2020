@@ -13,15 +13,15 @@ from data.volumentations import *
 class Patient:
 
 	def __init__(self, json_path=None, nifti_path=None):
-		# json and nifti paths can be None in case we just wanna 
+		# json and nifti paths can be none in case we just wanna 
 		# init a Patient object to load voxel arrays later.
 		if nifti_path is not None:
 			self.scan_voxel_array = self.get_voxel_array(nifti_path)
 			assert self.scan_voxel_array.shape[0] == self.scan_voxel_array.shape[1]
 			self.side_length      = self.scan_voxel_array.shape[0]
 			self.nb_slices		  = self.scan_voxel_array.shape[2]
-			self.threshold_mask   = np.zeros(shape=self.scan_voxel_array.shape)
 			self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
+			self.threshold_mask   = np.zeros(shape=self.scan_voxel_array.shape)
 		if json_path is not None:
 			self.annotations      = sorted(self.get_annotations(json_path),key=lambda x: x[2])
 			self.annotations_mask = np.zeros(shape=self.scan_voxel_array.shape)
@@ -60,7 +60,7 @@ class Patient:
 
 	def get_annotations(self, json_path):
 	    """ From a json paths returns a list of triplets [(x,y,z)].
-	    	Each of this triplet is an annotation.
+	        Each of this triplet is an annotation.
 	    """
 	    with open(json_path) as json_file:
 	        data = json.load(json_file)
@@ -69,6 +69,7 @@ class Patient:
 	        for key in data.keys():
 	            if key.isdigit():
 	                data['annotations'] = data.pop(key)
+	                break
 	        for annotation in data['annotations']:
 	            z_coord = annotation['instance']
 	            for label in annotation['labels']:
@@ -86,7 +87,7 @@ class Patient:
 
 	def make_one_annotation_mask(self, annotation, cube_side):
 	    """ Make a mask from a triplet (x,y,z) by
-	    	putting white voxels in a cube of side cube_side arround the annotated pixel.
+	        putting white voxels in a cube of side cube_side arround the annotated pixel.
 	    """
 	    x,y,z = annotation
 	    x,y = int(x), int(y)
@@ -200,8 +201,8 @@ class Patient:
 		return min_z, max_z
 
 	def find_padding_params(self, target_depth):
-		''' from the patient's mask find the first and last non white slices
-			and the offsest to reach the closest superior multiple of target depth.
+		''' from the patient's mask find the first and last non 
+			white slices and the offsest to reach a multiple of target depth.
 		'''
 		min_z, max_z = self.find_extremal_non_black_slices()
 		if (min_z, max_z) == (None, None):
@@ -246,11 +247,13 @@ class Patient:
 		for x in range(output_shape[0]):
 			for y in range(output_shape[1]):
 				output_array[x,y,:] = input_array[x+x_offset,y+y_offset,:]
+		#print(output_array.shape)
 		return output_array
 
 	def cut_xy_in_four(self, array):
 		assert array.shape[0] == array.shape[1]
 		half_length = array.shape[0]//2
+		#print(half_length)
 		new_shape = (half_length, half_length, array.shape[2])
 		top_left  = self.copy_xy_data(array, new_shape, 0,  0)
 		top_right = self.copy_xy_data(array, new_shape, 0,  half_length)
@@ -290,9 +293,19 @@ class Patient:
 							GaussianNoise(),
 							Normalize(always_apply=True)
 						], p=p)
-		data = {'image': self.scan_voxel_array, 'mask': self.mask_voxel_array}
-		aug_data = augmentation(**data)
-		self.augmented_scan, self.augmented_mask = aug_data['image'], aug_data['mask']
+		for i in range(len(self.cutted_scans)):
+			
+			data = {'image':  self.cutted_scans[i]['top_left'], 'mask':  self.cutted_scans[i]['top_left']}
+			aug_data1 = augmentation(**data)
+			data = {'image':  self.cutted_scans[i]['top_right'], 'mask':  self.cutted_scans[i]['top_right']}
+			aug_data2 = augmentation(**data)
+			data = {'image':  self.cutted_scans[i]['bot_left'], 'mask':  self.cutted_scans[i]['bot_left']}
+			aug_data3 = augmentation(**data)
+			data = {'image':  self.cutted_scans[i]['bot_right'], 'mask':  self.cutted_scans[i]['bot_right']}
+			aug_data4 = augmentation(**data)
+		
+		self.augmented_scan, self.augmented_mask = [ aug_data1['image'], aug_data2['image'], 
+											  aug_data3['image'], aug_data4['image']], [aug_data1['mask'], aug_data2['mask'], aug_data3['mask'], aug_data4['mask']]
 
 # +-------------------------------------------------------------------------------------+ #
 # |                                   	   I/O  		                                | #
@@ -328,10 +341,14 @@ class Patient:
 			np.save(f"{name}_[z{i}_bot_right]", self.cutted_masks[i]['bot_right'])
 
 	def save_augmented_scan(self, name):
-		np.save(name, self.augmented_scan)
-	
+		for i in range(len(self.augmented_scan)):
+			np.save(f"{name}_[z{i}_top_left]",  self.augmented_scan[0])
+			np.save(f"{name}_[z{i}_top_right]", self.augmented_scan[1])
+			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_scan[2])
+			np.save(f"{name}_[z{i}_bot_right]", self.augmented_scan[3])
 	def save_augmented_mask(self, name):
-		np.save(name, self.augmented_mask)
-		
-
-		
+		for i in range(len(self.augmented_mask )):
+			np.save(f"{name}_[z{i}_top_left]",  self.augmented_mask[0])
+			np.save(f"{name}_[z{i}_top_right]", self.augmented_mask[1])
+			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_mask[2])
+			np.save(f"{name}_[z{i}_bot_right]", self.augmented_mask[3])
