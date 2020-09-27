@@ -8,12 +8,12 @@ from scipy.ndimage import distance_transform_edt
 import numpy as np
 
 
-class CrossentropyND(torch.nn.CrossEntropyLoss):
+class CrossentropyND(torch.nn.BCELoss):
     """
     Network has to have NO NONLINEARITY!
     """
     def forward(self, inp, target):
-        target = target.long()
+        target = target.float()
         num_classes = inp.size()[1]
 
         i0 = 1
@@ -26,24 +26,23 @@ class CrossentropyND(torch.nn.CrossEntropyLoss):
 
         inp = inp.contiguous()
         inp = inp.view(-1, num_classes)
-
         target = target.view(-1,)
-
         return super(CrossentropyND, self).forward(inp, target)
 
 class TopKLoss(CrossentropyND):
     """
     Network has to have NO LINEARITY!
     """
-    def __init__(self, weight=None, ignore_index=-100, k=10):
+    def __init__(self, weight=None, k=10):
         self.k = k
-        super(TopKLoss, self).__init__(weight, False, ignore_index, reduce=False)
+        super(TopKLoss, self).__init__(weight, False, reduce=False)
 
     def forward(self, inp, target):
         target = target[:, 0].long()
         res = super(TopKLoss, self).forward(inp, target)
         num_voxels = np.prod(res.shape)
         res, _ = torch.topk(res.view((-1, )), int(num_voxels * self.k / 100), sorted=False)
+        print(res)
         return res.mean()
 
 
