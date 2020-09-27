@@ -41,7 +41,7 @@ class DeepLabV3_3D(nn.Module):
             self.aspp = ASPP(num_classes=self.num_classes)
 
     def forward(self, x):
-
+        x = x.unsqueeze(1)
         h = x.size()[2]
         w = x.size()[3]
         c = x.size()[4]
