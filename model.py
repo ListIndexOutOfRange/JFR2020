@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 from models.init import init_optimizer, init_scheduler
 from models.net import DeepLabV3_3D
-from models.losses import DC_and_topk_loss
+from models.losses import DC_and_topk_loss,SoftDiceLoss
 
 from pytorch_lightning.metrics import AUC
 
@@ -43,9 +43,10 @@ class LightningModel(pl.LightningModule):
         
         super().__init__()
         self.config      = config
+        #self.criterion   = SoftDiceLoss(batch_dice=True, smooth=1e-5, do_bg=False)
         self.criterion   = DC_and_topk_loss({'batch_dice':True, 'smooth':1e-5, 'do_bg':False}, {'k':10})
         self.save_hyperparameters()
-        self.net = DeepLabV3_3D(num_classes=2, input_channels=1, resnet='resnet18_os16', last_activation='softmax')
+        self.net = DeepLabV3_3D(num_classes=1, input_channels=1, resnet='resnet18_os16', last_activation='softmax')
 
     def forward(self, scan): # list because of different input sizes
         return self.net(scan)
@@ -58,7 +59,7 @@ class LightningModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         scans, true_masks = batch
         predicted_masks = self(scans)
-        loss = self.criterion(predicted_masks, true_masks)
+        loss = self.criterion(predicted_masks, true_masks.unsqueeze(1))
         result = pl.TrainResult(loss, early_stop_on=loss, checkpoint_on=loss)
         result.log('train_loss', loss)
         return result
@@ -66,7 +67,7 @@ class LightningModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         scans, true_masks = batch
         predicted_masks = self(scans)
-        loss = self.criterion(predicted_masks, true_masks)
+        loss = self.criterion(predicted_masks, true_masks.unsqueeze(1))
         result = pl.EvalResult(checkpoint_on=loss)
         result.log('val_loss', loss)
         return result
