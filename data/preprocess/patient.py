@@ -294,14 +294,13 @@ class Patient:
 							Normalize(always_apply=True)
 						], p=p)
 		for i in range(len(self.cutted_scans)):
-			
-			data = {'image':  self.cutted_scans[i]['top_left'], 'mask':  self.cutted_scans[i]['top_left']}
+			data = {'image':  self.cutted_scans[i]['top_left'], 'mask':  self.cutted_masks[i]['top_left']}
 			aug_data1 = augmentation(**data)
-			data = {'image':  self.cutted_scans[i]['top_right'], 'mask':  self.cutted_scans[i]['top_right']}
+			data = {'image':  self.cutted_scans[i]['top_right'], 'mask':  self.cutted_masks[i]['top_right']}
 			aug_data2 = augmentation(**data)
-			data = {'image':  self.cutted_scans[i]['bot_left'], 'mask':  self.cutted_scans[i]['bot_left']}
+			data = {'image':  self.cutted_scans[i]['bot_left'], 'mask':  self.cutted_masks[i]['bot_left']}
 			aug_data3 = augmentation(**data)
-			data = {'image':  self.cutted_scans[i]['bot_right'], 'mask':  self.cutted_scans[i]['bot_right']}
+			data = {'image':  self.cutted_scans[i]['bot_right'], 'mask':  self.cutted_masks[i]['bot_right']}
 			aug_data4 = augmentation(**data)
 		
 		self.augmented_scan, self.augmented_mask = [ aug_data1['image'], aug_data2['image'], 
