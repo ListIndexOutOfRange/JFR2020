@@ -13,15 +13,15 @@ from data.volumentations import *
 class Patient:
 
 	def __init__(self, json_path=None, nifti_path=None):
-		# json and nifti paths can be none in case we just wanna 
+		# json and nifti paths can be None in case we just wanna 
 		# init a Patient object to load voxel arrays later.
 		if nifti_path is not None:
 			self.scan_voxel_array = self.get_voxel_array(nifti_path)
 			assert self.scan_voxel_array.shape[0] == self.scan_voxel_array.shape[1]
 			self.side_length      = self.scan_voxel_array.shape[0]
 			self.nb_slices		  = self.scan_voxel_array.shape[2]
-			self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
 			self.threshold_mask   = np.zeros(shape=self.scan_voxel_array.shape)
+			self.mean_intensity_stack = self.scan_voxel_array.mean(axis=(0,1))
 		if json_path is not None:
 			self.annotations      = sorted(self.get_annotations(json_path),key=lambda x: x[2])
 			self.annotations_mask = np.zeros(shape=self.scan_voxel_array.shape)
@@ -60,7 +60,7 @@ class Patient:
 
 	def get_annotations(self, json_path):
 	    """ From a json paths returns a list of triplets [(x,y,z)].
-	        Each of this triplet is an annotation.
+	    	Each of this triplet is an annotation.
 	    """
 	    with open(json_path) as json_file:
 	        data = json.load(json_file)
@@ -86,7 +86,7 @@ class Patient:
 
 	def make_one_annotation_mask(self, annotation, cube_side):
 	    """ Make a mask from a triplet (x,y,z) by
-	        putting white voxels in a cube of side cube_side arround the annotated pixel.
+	    	putting white voxels in a cube of side cube_side arround the annotated pixel.
 	    """
 	    x,y,z = annotation
 	    x,y = int(x), int(y)
@@ -200,8 +200,8 @@ class Patient:
 		return min_z, max_z
 
 	def find_padding_params(self, target_depth):
-		''' from the patient's mask find the first and last non 
-			white slices and the offsest to reach a multiple of target depth.
+		''' from the patient's mask find the first and last non white slices
+			and the offsest to reach the closest superior multiple of target depth.
 		'''
 		min_z, max_z = self.find_extremal_non_black_slices()
 		if (min_z, max_z) == (None, None):

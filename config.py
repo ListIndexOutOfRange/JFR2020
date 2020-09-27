@@ -15,7 +15,7 @@
   5 dataclasses are defined:
 
     +-------------------------------------------------------------------------------------+
-    | Dataloader  |            used to instanciate a DicomDataModule (see data.py)        |
+    | Dataloader  |            used to instanciate a DataModule (see data.py)             |
     +-------------+-----------------------------------------------------------------------+
     | Network     |           Concatenated into a Model config meta dataclass             |
     | Optimizer   |         (basically a wrapper, according to our terminology).          |
