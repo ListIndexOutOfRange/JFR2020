@@ -42,7 +42,6 @@ class TopKLoss(CrossentropyND):
         res = super(TopKLoss, self).forward(inp, target)
         num_voxels = np.prod(res.shape)
         res, _ = torch.topk(res.view((-1, )), int(num_voxels * self.k / 100), sorted=False)
-        print(res)
         return res.mean()
 
 
