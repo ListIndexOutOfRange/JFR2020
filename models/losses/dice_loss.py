@@ -253,7 +253,7 @@ class SSLoss(nn.Module):
 
 
 class SoftDiceLoss(nn.Module):
-    def __init__(self, apply_nonlin=None, batch_dice=False, do_bg=True, smooth=1.,
+    def __init__(self, apply_nonlin=None, batch_dice=False, do_bg=False, smooth=1.,
                  square=False):
         """
         paper: https://arxiv.org/pdf/1606.04797.pdf
@@ -280,14 +280,13 @@ class SoftDiceLoss(nn.Module):
         tp, fp, fn = get_tp_fp_fn(x, y, axes, loss_mask, self.square)
 
         dc = (2 * tp + self.smooth) / (2 * tp + fp + fn + self.smooth)
-
-        if not self.do_bg:
+        """if not self.do_bg:
+            print(dc)
             if self.batch_dice:
                 dc = dc[1:]
             else:
-                dc = dc[:, 1:]
+                dc = dc[:, 1:]""" # dc.shape = [1] 
         dc = dc.mean()
-
         return -dc
 
 class IoULoss(nn.Module):
@@ -468,7 +467,9 @@ class DC_and_topk_loss(nn.Module):
 
     def forward(self, net_output, target):
         dc_loss = self.dc(net_output, target)
+        print("dc_loss %s" % dc_loss)
         ce_loss = self.ce(net_output, target)
+        print("ce_loss  %s" % ce_loss)
         if self.aggregate == "sum":
             result = ce_loss + dc_loss
         else:

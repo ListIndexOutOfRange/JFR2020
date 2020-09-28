@@ -327,17 +327,17 @@ class Patient:
 
 	def save_cutted_scans(self, name):
 		for i in range(len(self.cutted_scans)):
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/scans/{name}_[z{i}_top_left]",  self.cutted_scans[i]['top_left'])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/scans/{name}_[z{i}_top_right]", self.cutted_scans[i]['top_right'])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/scans/{name}_[z{i}_bot_left]",  self.cutted_scans[i]['bot_left'])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/scans/{name}_[z{i}_bot_right]", self.cutted_scans[i]['bot_right'])
+			np.save(f"{name}_[z{i}_top_left]",  self.cutted_scans[i]['top_left'])
+			np.save(f"{name}_[z{i}_top_right]", self.cutted_scans[i]['top_right'])
+			np.save(f"{name}_[z{i}_bot_left]",  self.cutted_scans[i]['bot_left'])
+			np.save(f"{name}_[z{i}_bot_right]", self.cutted_scans[i]['bot_right'])
 
 	def save_cutted_masks(self, name):
 		for i in range(len(self.cutted_masks)):
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/masks/{name}_[z{i}_top_left]",  self.cutted_masks[i]['top_left'])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/masks/{name}_[z{i}_top_right]", self.cutted_masks[i]['top_right'])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/masks/{name}_[z{i}_bot_left]",  self.cutted_masks[i]['bot_left'])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/masks/{name}_[z{i}_bot_right]", self.cutted_masks[i]['bot_right'])
+			np.save(f"{name}_[z{i}_top_left]",  self.cutted_masks[i]['top_left'])
+			np.save(f"{name}_[z{i}_top_right]", self.cutted_masks[i]['top_right'])
+			np.save(f"{name}_[z{i}_bot_left]",  self.cutted_masks[i]['bot_left'])
+			np.save(f"{name}_[z{i}_bot_right]", self.cutted_masks[i]['bot_right'])
 
 	def save_augmented_scan(self, name):
 		self.augmented_scan[0] = np.expand_dims(self.augmented_scan[0], axis=(0))
@@ -345,17 +345,17 @@ class Patient:
 		self.augmented_scan[2] = np.expand_dims(self.augmented_scan[2], axis=(0))
 		self.augmented_scan[3] = np.expand_dims(self.augmented_scan[3], axis=(0))  
 		for i in range(len(self.augmented_scan)):  
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/scans/{name}_[z{i}_top_left]",  self.augmented_scan[0])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/scans/{name}_[z{i}_top_right]", self.augmented_scan[1])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/scans/{name}_[z{i}_bot_left]",  self.augmented_scan[2])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/scans/{name}_[z{i}_bot_right]", self.augmented_scan[3])
+			np.save(f"{name}_[z{i}_top_left]",  self.augmented_scan[0])
+			np.save(f"{name}_[z{i}_top_right]", self.augmented_scan[1])
+			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_scan[2])
+			np.save(f"{name}_[z{i}_bot_right]", self.augmented_scan[3])
 	def save_augmented_mask(self, name):
 		self.augmented_mask[0] = np.expand_dims(self.augmented_mask[0], axis=(0))
 		self.augmented_mask[1] = np.expand_dims(self.augmented_mask[1], axis=(0))
 		self.augmented_mask[2] = np.expand_dims(self.augmented_mask[2], axis=(0))
 		self.augmented_mask[3] = np.expand_dims(self.augmented_mask[3], axis=(0)) 
 		for i in range(len(self.augmented_mask )):
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/masks/{name}_[z{i}_top_left]",  self.augmented_mask[0])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/masks/{name}_[z{i}_top_right]", self.augmented_mask[1])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/masks/{name}_[z{i}_bot_left]",  self.augmented_mask[2])
-			np.save(f"/sanssauvegarde/homes/y17eloua/sfr/preprocessed/augmented/masks/{name}_[z{i}_bot_right]", self.augmented_mask[3])
+			np.save(f"/{name}_[z{i}_top_left]",  self.augmented_mask[0])
+			np.save(f"{name}_[z{i}_top_right]", self.augmented_mask[1])
+			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_mask[2])
+			np.save(f"{name}_[z{i}_bot_right]", self.augmented_mask[3])

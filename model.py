@@ -61,6 +61,9 @@ class LightningModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         scans, true_masks = batch
+        if torch.isnan(scans.max()):
+            print("Nan detected at batch %s" % batch_idx)
+            scans[torch.isnan(scans)] = 0
         predicted_masks = self(scans)
         loss = self.criterion(predicted_masks, true_masks)
         result = pl.TrainResult(loss, early_stop_on=loss, checkpoint_on=loss)
@@ -69,6 +72,9 @@ class LightningModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         scans, true_masks = batch
+        if torch.isnan(scans.max()):
+            print("Nan detected at batch %s" % batch_idx)
+            scans[torch.isnan(scans)] = 0
         predicted_masks = self(scans)
         loss = self.criterion(predicted_masks, true_masks)
         result = pl.EvalResult(checkpoint_on=loss)

@@ -53,8 +53,6 @@ class DeepLabV3_3D(nn.Module):
         
         if self.last_activation.lower() == 'sigmoid':
             output = nn.Sigmoid()(output)
-        
         elif self.last_activation.lower() == 'softmax':
             output = nn.Softmax()(output)
-        
         return output

@@ -23,11 +23,13 @@ class CrossentropyND(torch.nn.BCELoss):
             inp = inp.transpose(i0, i1)
             i0 += 1
             i1 += 1
-
         inp = inp.contiguous()
         inp = inp.view(-1, num_classes)
+
         target = target.view(-1,)
-        target = torch.nn.Sigmoid()(target)
+
+        #target = torch.nn.Sigmoid()(target)
+
         return super(CrossentropyND, self).forward(inp, target)
 
 class TopKLoss(CrossentropyND):
