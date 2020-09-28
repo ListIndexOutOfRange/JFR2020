@@ -280,12 +280,12 @@ class SoftDiceLoss(nn.Module):
         tp, fp, fn = get_tp_fp_fn(x, y, axes, loss_mask, self.square)
 
         dc = (2 * tp + self.smooth) / (2 * tp + fp + fn + self.smooth)
-        """if not self.do_bg:
+        if not self.do_bg:
             print(dc)
             if self.batch_dice:
                 dc = dc[1:]
             else:
-                dc = dc[:, 1:]""" # dc.shape = [1] 
+                dc = dc[:, 1:] # dc.shape = [1] 
         dc = dc.mean()
         return -dc
 

@@ -47,7 +47,7 @@ class LightningModel(pl.LightningModule):
         #self.criterion = FocalTversky_loss
         #self.criterion = IoULoss()
         #self.criterion   = SoftDiceLoss(batch_dice=True, smooth=1e-5, do_bg=False)
-        self.criterion   = DC_and_topk_loss({'batch_dice':True, 'smooth':1e-5, 'do_bg':False}, {'k':10})
+        self.criterion   = DC_and_topk_loss({'batch_dice':True, 'smooth':1e-5, 'do_bg':True}, {'k':10})
         self.save_hyperparameters()
         self.net = DeepLabV3_3D(num_classes=1, input_channels=1, resnet='resnet18_os16', last_activation='sigmoid')
 
