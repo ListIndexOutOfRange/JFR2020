@@ -27,6 +27,7 @@ class CrossentropyND(torch.nn.BCELoss):
         inp = inp.contiguous()
         inp = inp.view(-1, num_classes)
         target = target.view(-1,)
+        target = torch.nn.Sigmoid()(target)
         return super(CrossentropyND, self).forward(inp, target)
 
 class TopKLoss(CrossentropyND):
