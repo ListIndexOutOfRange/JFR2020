@@ -122,8 +122,8 @@ class Dataloader:
     
     scan_rootdir: str = '../preprocessed/scans/'
     mask_rootdir: str = '../preprocessed/masks/'
-    train_batch_size: int = 3
-    val_batch_size:   int = 3
+    train_batch_size: int = 32
+    val_batch_size:   int = 32
     num_workers:      int = 4
 
 
