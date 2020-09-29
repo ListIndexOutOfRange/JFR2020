@@ -351,7 +351,7 @@ class ResNet_BasicBlock_OS8(nn.Module):
 
         self.layer4 = make_layer(BasicBlock, in_channels=128, channels=256, num_blocks=num_blocks_layer_4, stride=1, dilation=2)
 
-        self.layer5 = make_layer(BasicBlock, in_channels=256, channels=512, num_blocks=num_blocks_layer_5, stride=1, dilation=4)
+        self.layer5 = make_layer(BasicBlock, in_channels=256, channels=256, num_blocks=num_blocks_layer_5, stride=1, dilation=4)
 
     def forward(self, x):
         c3 = self.resnet(x)
