@@ -349,6 +349,7 @@ class Patient:
 			np.save(f"{name}_[z{i}_top_right]", self.augmented_scan[1])
 			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_scan[2])
 			np.save(f"{name}_[z{i}_bot_right]", self.augmented_scan[3])
+
 	def save_augmented_mask(self, name):
 		self.augmented_mask[0] = np.nan_to_num(np.expand_dims(self.augmented_mask[0], axis=(0)))
 		self.augmented_mask[1] = np.nan_to_num(np.expand_dims(self.augmented_mask[1], axis=(0)))

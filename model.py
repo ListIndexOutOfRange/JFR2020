@@ -3,7 +3,6 @@
     This model class will be the one to be fit by a Trainer
  """
 
-import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
 from models.init import init_optimizer, init_scheduler
@@ -47,7 +46,7 @@ class LightningModel(pl.LightningModule):
         self.save_hyperparameters()
         self.net = DeepLabV3_3D(num_classes=1, input_channels=1, resnet='resnet18_os16', last_activation='sigmoid')
 
-    def forward(self, scan): # list because of different input sizes
+    def forward(self, scan): 
         return self.net(scan)
 
     def configure_optimizers(self):
