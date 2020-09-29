@@ -87,8 +87,8 @@ def test(path):
 
 if __name__ == '__main__':
     run_preprocessing()
-    augment()
-    #test_preprocessing()
+    # augment()
+    # test_preprocessing()
     # run_training()
     # test('./lightning_logs/version_') 
 

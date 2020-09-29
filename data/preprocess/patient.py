@@ -237,11 +237,9 @@ class Patient:
 			cutted_mask = np.ndarray((self.side_length, self.side_length, target_depth))
 			cutted_scan = self.scan_voxel_array[:,:,offset:offset+target_depth]
 			cutted_mask = self.mask_voxel_array[:,:,offset:offset+target_depth]
-			cutted_scans.append(cutted_scan)
-			cutted_masks.append(cutted_mask)
+			cutted_scans.append(np.nan_to_num(cutted_scan))
+			cutted_masks.append(np.nan_to_num(cutted_mask))
 			offset += target_depth
-			cutted_scans=np.nan_to_num(cutted_scans)
-			cutted_masks=np.nan_to_num(cutted_masks)
 		return cutted_scans, cutted_masks
 
 	def copy_xy_data(self, input_array, output_shape, x_offset, y_offset):
@@ -351,13 +349,14 @@ class Patient:
 			np.save(f"{name}_[z{i}_top_right]", self.augmented_scan[1])
 			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_scan[2])
 			np.save(f"{name}_[z{i}_bot_right]", self.augmented_scan[3])
+
 	def save_augmented_mask(self, name):
 		self.augmented_mask[0] = np.nan_to_num(np.expand_dims(self.augmented_mask[0], axis=(0)))
 		self.augmented_mask[1] = np.nan_to_num(np.expand_dims(self.augmented_mask[1], axis=(0)))
 		self.augmented_mask[2] = np.nan_to_num(np.expand_dims(self.augmented_mask[2], axis=(0)))
 		self.augmented_mask[3] = np.nan_to_num(np.expand_dims(self.augmented_mask[3], axis=(0))) 
 		for i in range(len(self.augmented_mask )):
-			np.save(f"/{name}_[z{i}_top_left]",  self.augmented_mask[0])
+			np.save(f"{name}_[z{i}_top_left]",  self.augmented_mask[0])
 			np.save(f"{name}_[z{i}_top_right]", self.augmented_mask[1])
 			np.save(f"{name}_[z{i}_bot_left]",  self.augmented_mask[2])
 			np.save(f"{name}_[z{i}_bot_right]", self.augmented_mask[3])

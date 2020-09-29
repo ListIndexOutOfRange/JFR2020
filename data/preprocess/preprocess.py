@@ -49,6 +49,7 @@ class Preprocess:
         """
         all_json_files = list(filter(lambda x: x.endswith(".json"), os.listdir(self.input_dir)))
         all_json_paths = list(map(lambda x: os.path.join(self.input_dir, x), all_json_files))
+        all_json_paths = list(filter(lambda x: 'meta' not in x, all_json_paths))
         good_json_paths = []
         for json_path in all_json_paths:
             with open(json_path) as json_file:
@@ -63,6 +64,8 @@ class Preprocess:
             We select the deepest one being smaller than max_depth.
         """
         nifti_candidates = list(filter(lambda x: x.startswith(json_path[:-5]) and x.endswith(".nii.gz"), all_paths))
+        if len(nifti_candidates) == 0:
+            return None
         max_z = 1
         final_nifti_path = nifti_candidates[0]
         for nifti_path in nifti_candidates:
@@ -79,7 +82,8 @@ class Preprocess:
         good_json_paths = self.get_good_json_paths()
         for json_path in good_json_paths:
             nifti_path = self.select_one_nifti_path(json_path, all_paths, max_depth)
-            dataset_paths.append((json_path,nifti_path))
+            if nifti_path is not None:
+                dataset_paths.append((json_path,nifti_path))
         return dataset_paths
 
     def prepare_output_folders(self):
@@ -173,7 +177,7 @@ class Preprocess:
     def fast_all_steps(self, cube_side=10, factor=2, margin=5, target_depth=64, augment_factor=10, augment_proba=0.7):
         """ Performs all steps (1,2,3 + augment) faster by avoiding intermediate save/load. """
         self.prepare_output_folders()
-        for i in tqdm(range(len(self.dataset_paths))):
+        for i in tqdm(range(len(self.dataset_paths[231:]))):
             json_path, nifti_path = self.dataset_paths[i] 
             output_scan_path, mask_path = self.output_paths[i][0], self.output_paths[i][1]
             patient = Patient(json_path, nifti_path)

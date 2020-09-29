@@ -89,14 +89,14 @@ class Preprocess:
                          e.g if augment_proba=0.5, 50% of the inputed scan will be left unchanged by
                          augmentation.
     """
-    input_dir:       str = "/your/path/here/sficv/"
-    output_dir:      str = "/your/path/here/preprocessed/"
+    input_dir:       str = "../sficv_2/"
+    output_dir:      str = "../preprocessed/"
     max_depth:       int = 500
     cube_side:       int = 10
     factor:          int = 2
     margin:          int = 10
     target_depth:    int = 64
-    augment_factor:  int = 20
+    augment_factor:  int = 4
     augment_proba: float = 0.8 
     steps: list = field(default_factory = lambda: [1,2,3])
 
@@ -120,8 +120,8 @@ class Dataloader:
     - Num Workers should be 4*(nb GPUs). 
     """
     
-    scan_rootdir: str = '/your/path/here/augmented/scans/'
-    mask_rootdir: str = '/your/path/here/augmented/masks/'
+    scan_rootdir: str = '../preprocessed/scans/'
+    mask_rootdir: str = '../preprocessed/masks/'
     train_batch_size: int = 3
     val_batch_size:   int = 3
     num_workers:      int = 4
