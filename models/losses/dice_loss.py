@@ -466,9 +466,7 @@ class DC_and_topk_loss(nn.Module):
 
     def forward(self, net_output, target):
         dc_loss = self.dc(net_output, target)
-        print("dc_loss %s" % dc_loss)
         ce_loss = self.ce(net_output, target)
-        print("ce_loss  %s" % ce_loss)
         if self.aggregate == "sum":
             result = ce_loss + dc_loss
         else:
