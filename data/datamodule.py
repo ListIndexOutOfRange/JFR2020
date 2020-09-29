@@ -24,11 +24,16 @@ class JFRDataModule(pl.LightningDataModule):
         """
         train_length = int(0.8*len(os.listdir(self.config.scan_rootdir)))
         val_length   = int(0.2*len(os.listdir(self.config.scan_rootdir)))
-
+        print(train_length)
+        print(val_length)
         if stage == 'fit' or stage is None:
             jfr_full = JFRDataset(scan_root = self.config.scan_rootdir, mask_root = self.config.mask_rootdir,
                                     train = True,
                                     transform = self.transform_scan, target_transform = self.transform_mask)
+            
+            print(len(jfr_full))
+            print(train_length)
+            print(val_length)
             self.jfr_train, self.jfr_val = random_split(jfr_full, [train_length, val_length])
 
         # Assign test dataset for use in dataloader(s)

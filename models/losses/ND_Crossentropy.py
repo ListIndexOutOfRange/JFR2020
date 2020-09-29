@@ -27,10 +27,13 @@ class CrossentropyND(torch.nn.BCELoss):
         inp = inp.view(-1, num_classes)
 
         target = target.view(-1,)
-
+        #print(torch.isnan(target.max()))
         #target = torch.nn.Sigmoid()(target)
-
-        return super(CrossentropyND, self).forward(inp, target)
+        #print(torch.isnan(inp.max()))
+        res = super(CrossentropyND, self).forward(inp, target)
+        #print(torch.isnan(res))
+        #print(res)
+        return res
 
 class TopKLoss(CrossentropyND):
     """
@@ -38,13 +41,15 @@ class TopKLoss(CrossentropyND):
     """
     def __init__(self, weight=None, k=10):
         self.k = k
-        super(TopKLoss, self).__init__(weight, False, reduce=False)
+        super(TopKLoss, self).__init__(weight, True, reduce=True)
 
     def forward(self, inp, target):
         target = target[:, 0].long()
         res = super(TopKLoss, self).forward(inp, target)
+        print(res)
         num_voxels = np.prod(res.shape)
         res, _ = torch.topk(res.view((-1, )), int(num_voxels * self.k / 100), sorted=False)
+        print(res)
         return res.mean()
 
 
@@ -72,6 +77,8 @@ class WeightedCrossEntropyLoss(torch.nn.CrossEntropyLoss):
         inp = inp.view(-1, num_classes)
 
         target = target.view(-1,)
+        if torch.cuda.is_available():
+            self.weight = self.weight.cuda()
         wce_loss = torch.nn.CrossEntropyLoss(weight=self.weight)
 
         return wce_loss(inp, target)

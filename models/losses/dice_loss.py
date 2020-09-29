@@ -456,7 +456,6 @@ class PenaltyGDiceLoss(nn.Module):
 
         return penalty_gdc
 
-        
 
 class DC_and_topk_loss(nn.Module):
     def __init__(self, soft_dice_kwargs, ce_kwargs, aggregate="sum"):
@@ -476,7 +475,23 @@ class DC_and_topk_loss(nn.Module):
             raise NotImplementedError("nah son") # reserved for other stuff (later?)
         return result
 
+class DC_and_bce_loss(nn.Module):
+    def __init__(self, soft_dice_kwargs, ce_kwargs, aggregate="sum"):
+        super(DC_and_bce_loss, self).__init__()
+        self.aggregate = aggregate
+        self.ce = CrossentropyND()
+        self.dc = SoftDiceLoss(apply_nonlin=softmax_helper, **soft_dice_kwargs)
 
+    def forward(self, net_output, target):
+        dc_loss = self.dc(net_output, target)
+        print("dc_loss %s" % dc_loss)
+        ce_loss = self.ce(net_output, target)
+        print("ce_loss  %s" % ce_loss)
+        if self.aggregate == "sum":
+            result = ce_loss + dc_loss
+        else:
+            raise NotImplementedError("nah son") # reserved for other stuff (later?)
+        return result
 
 class ExpLog_loss(nn.Module):
     """
