@@ -2,11 +2,14 @@
 
 import os
 from argparse import ArgumentParser
+import pandas as pd
+import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateLogger
 from model import LightningModel
 from data import JFRDataModule
 from data.preprocess import Preprocess
+from predict import PredictorCalci
 import config as cfg
 
 
@@ -71,12 +74,14 @@ def augment():
     preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
     preprocessor.augment(input_dir, output_dir, config.augment_factor, config.augment_proba)
 
+
 def run_training():
     """ Instanciate a datamodule, a model and a trainer and run trainer.fit(model, data) """
     data   = init_data()
     config = make_config()
     model, trainer = init_model(config), init_trainer()
     trainer.fit(model, data)
+
 
 def test(path):
     data    = init_data()
@@ -85,10 +90,24 @@ def test(path):
     trainer.test()
 
 
+def preprocess_eval():
+    config = cfg.Preprocess()
+    preprocessor = Preprocess(config.input_dir, config.output_dir, config.max_depth)
+    preprocessor.preprocess_eval(config.cube_side, config.factor, config.margin, config.target_depth)
+
+
+def predict(model_path, input_path, output_path):
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    predictor = PredictorCalci(model_path, 0.5, device)
+    result_df = predictor.predict_score(input_path)
+    result_df.to_csv(output_path, index=False, sep=';')
+
 if __name__ == '__main__':
     # run_preprocessing()
     # augment()
     # test_preprocessing()
-    run_training()
+    # run_training()
     # test('./lightning_logs/version_') 
+    #preprocess_eval()
+    predict("./lightning_logs/version_5/checkpoints/epoch=45.ckpt", "../eval/scans/", "../predictions.csv")
 

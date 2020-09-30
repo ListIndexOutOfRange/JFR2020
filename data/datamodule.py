@@ -28,12 +28,6 @@ class JFRDataModule(pl.LightningDataModule):
             jfr_full = JFRDataset(scan_root = self.config.scan_rootdir, mask_root = self.config.mask_rootdir,
                                     train = True,
                                     transform = self.transform_scan, target_transform = self.transform_mask)
-            print()
-            print(80*'-')
-            print(len(jfr_full))
-            print(train_length)
-            print(val_length)
-            print(80*'-')
             self.jfr_train, self.jfr_val = random_split(jfr_full, [train_length, val_length])
 
 

@@ -6,23 +6,17 @@ Created on Tue Sep 29 18:57:02 2020
 @author: thomas
 """
 
+import os
+import glob
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
-from models.init import init_optimizer, init_scheduler
-from models.net import DeepLabV3_3D
-from models.losses import DC_and_topk_loss
+
 from model import LightningModel
 
-from pytorch_lightning.metrics.functional import iou
-from pytorch_lightning.metrics.classification import accuracy
-
-import os
-import glob
-
-import os
-import numpy as np
-import pandas as pd
 
 class PredictorCalci():
     
@@ -89,14 +83,13 @@ class PredictorCalci():
         #compute the volume for each patient
         ###
         
-        for index in range(len(list_file_name)):
+        for index in tqdm(range(len(list_file_name))):
             scan = torch.tensor(np.load(list_file_name[index], allow_pickle=True)).unsqueeze(1)
             if torch.isnan(scan.max()):
                 print("Nan detected at batch")
                 scan[torch.isnan(scan)] = 0
             scan = scan.float().to(self.device)
             predicted_mask = self.model(scan)
-            print(index)
             dico_volume[list_patient_id[index]] += torch.sum(predicted_mask >= self.threshold)
         ###
         #compute score for each patient

@@ -207,16 +207,17 @@ class Preprocess:
         if 'augment' in steps:
             self.augment(augment_factor, augment_proba)
 
-    def test(self, cube_side=10, factor=2, margin=5, target_depth=64, augment_factor=10, augment_proba=0.7):
+    def preprocess_eval(self, cube_side=10, factor=2, margin=5, target_depth=64):
         self.prepare_output_folders()
-        for i in tqdm(range(len(self.dataset_paths))):
-            json_path, nifti_path = self.dataset_paths[i] 
-            output_scan_path, mask_path = self.output_paths[i][0], self.output_paths[i][1]
-            patient = Patient(json_path, nifti_path)
-            patient.make_mask(cube_side)
-            patient.rescale('up') 
-            patient.crop_3d(factor, margin)
-            patient.rescale('down') 
-            patient.cut(target_depth)
-            patient.save_cutted_scans(output_scan_path[:-4])
-            patient.save_cutted_masks(mask_path[:-4])
+        scan_list = list(filter(lambda x: x.endswith('.nii.gz'), os.listdir(self.input_dir)))
+        for i in tqdm(range(len(scan_list))): 
+            nifti_path = os.path.join(self.input_dir, scan_list[i])
+            output_scan_path = os.path.join(self.output_dir, "scans/", scan_list[i])
+            shape = nib.load(nifti_path).shape
+            if shape[0] == shape[1]:
+                patient = Patient(nifti_path=nifti_path)
+                patient.rescale('up')
+                patient.crop_3d(factor, margin, scan_only=True)
+                patient.rescale('down') 
+                patient.cut(target_depth, scan_only=True)
+                patient.save_cutted_scans(output_scan_path[:-4])

@@ -143,52 +143,58 @@ class Patient:
 		intensity_max = array_intensity_mean + factor*array_intensity_std
 		return intensity_min, intensity_max
 	
-	def delete_outliers(self, intensity_min, intensity_max, margin, use_annotations=True):
+	def delete_outliers(self, intensity_min, intensity_max, margin, scan_only):
 		min_z_by_intensity, max_z_by_intensity = self.get_z_range_by_intensity(intensity_min, intensity_max)
-		if use_annotations:
+		if scan_only:
+			min_z, max_z = min_z_by_intensity, max_z_by_intensity
+		else:
 			min_z_by_annotations, max_z_by_annotations = self.get_z_range_by_annotations(margin)
 			min_z = min(min_z_by_intensity, min_z_by_annotations)
 			max_z = max(max_z_by_intensity, max_z_by_annotations)
-		else:
-			min_z, max_z = min_z_by_intensity, max_z_by_intensity
 		self.scan_voxel_array = self.scan_voxel_array[:,:,min_z:max_z]
-		self.mask_voxel_array = self.mask_voxel_array[:,:,min_z:max_z]
+		if not scan_only:
+			self.mask_voxel_array = self.mask_voxel_array[:,:,min_z:max_z]
 		self.nb_slices = self.scan_voxel_array.shape[2]
 
-	def crop_z(self, factor, margin):
-	    """ Get the z range to keep by calculating mean and std of intensity values of each slice. """
-	    self.delete_outliers(-600, -150, margin)
-	    intensity_min, intensity_max = self.get_intensity_range(factor) 
-	    self.delete_outliers(intensity_min, intensity_max, margin)
+	def crop_z(self, factor, margin, scan_only):
+		""" Get the z range to keep by calculating mean and std of intensity values of each slice. """
+		self.delete_outliers(-600, -150, margin, scan_only)
+		intensity_min, intensity_max = self.get_intensity_range(factor) 
+		self.delete_outliers(intensity_min, intensity_max, margin, scan_only)
 	    
-	def crop_xy(self):
+	def crop_xy(self, scan_only):
 		""" Reduce slice size by keeping a centered square of size old_side_length/sqrt(2) """
 		new_side_length = int(self.side_length/np.sqrt(2))
 		center_index = self.side_length//2
 		offset = center_index - new_side_length//2
 		cropped_scan = np.ndarray(shape=(new_side_length, new_side_length, self.nb_slices))
-		cropped_mask = np.ndarray(shape=(new_side_length, new_side_length, self.nb_slices))
+		if not scan_only:
+			cropped_mask = np.ndarray(shape=(new_side_length, new_side_length, self.nb_slices))
 		for slice_index in range(self.nb_slices):
 			for x in range(new_side_length):
 				for y in range(new_side_length):
 					cropped_scan[x,y,slice_index] = self.scan_voxel_array[offset+x,offset+y,slice_index]
-					cropped_mask[x,y,slice_index] = self.mask_voxel_array[offset+x,offset+y,slice_index]
+					if not scan_only:
+						cropped_mask[x,y,slice_index] = self.mask_voxel_array[offset+x,offset+y,slice_index]
 		self.scan_voxel_array = cropped_scan
-		self.mask_voxel_array = cropped_mask
+		if not scan_only:
+			self.mask_voxel_array = cropped_mask
 		self.side_length = new_side_length
 
-	def crop_3d(self, factor, margin):
-	    self.crop_z(factor, margin)
-	    self.crop_xy()
+	def crop_3d(self, factor, margin, scan_only=False):
+	    self.crop_z(factor, margin, scan_only)
+	    self.crop_xy(scan_only)
 
 
 # +-------------------------------------------------------------------------------------+ #
 # |                                   		  CUT  		                                | #
 # +-------------------------------------------------------------------------------------+ #
 
-	def find_extremal_non_black_slices(self):
+	def find_extremal_non_black_slices(self, scan_only):
 		""" find first and last slice with white pixels"""
 		min_z, max_z = None, None
+		if scan_only:
+			return min_z, max_z
 		white_pixels_per_slice = np.count_nonzero(self.mask_voxel_array, axis=(0,1))
 		for z in range(self.nb_slices):
 			if white_pixels_per_slice[z] > 0:
@@ -200,30 +206,33 @@ class Patient:
 					break
 		return min_z, max_z
 
-	def find_padding_params(self, target_depth):
+	def find_padding_params(self, target_depth, scan_only):
 		''' from the patient's mask find the first and last non 
 			white slices and the offsest to reach a multiple of target depth.
 		'''
-		min_z, max_z = self.find_extremal_non_black_slices()
+		min_z, max_z = self.find_extremal_non_black_slices(scan_only)
 		if (min_z, max_z) == (None, None):
 			min_z, max_z = 0, self.nb_slices
 		new_z = ((max_z-min_z)//target_depth + 1)*target_depth
 		offset = (new_z-(max_z-min_z))//2
 		return min_z, max_z, new_z, offset
 
-	def pad_z(self, target_depth):
+	def pad_z(self, target_depth, scan_only):
 		""" pad scan and mask to the closest superior multiple of target_depth"""
-		min_z, max_z, new_z, offset = self.find_padding_params(target_depth)
+		min_z, max_z, new_z, offset = self.find_padding_params(target_depth, scan_only)
 		padded_scan = np.zeros((self.side_length, self.side_length, new_z))
-		padded_mask = np.zeros((self.side_length, self.side_length, new_z))
+		if not scan_only:
+			padded_mask = np.zeros((self.side_length, self.side_length, new_z))
 		for i in range(max_z-min_z):
 			padded_scan[:,:,i+offset] = self.scan_voxel_array[:,:,i+min_z]
-			padded_mask[:,:,i+offset] = self.mask_voxel_array[:,:,i+min_z]
+			if not scan_only:
+				padded_mask[:,:,i+offset] = self.mask_voxel_array[:,:,i+min_z]
 		self.scan_voxel_array = padded_scan
-		self.mask_voxel_array = padded_mask
+		if not scan_only:
+			self.mask_voxel_array = padded_mask
 		self.nb_slices = new_z
 
-	def cut_z(self, target_depth):
+	def cut_z(self, target_depth, scan_only):
 		""" Cut padded scan and mask into several cubes of size target_depth.
 			Note that this function will pad scan and mask if the current depth (ie nb_slices)
 			isn't a multiple of target_depth.
@@ -234,11 +243,12 @@ class Patient:
 		cutted_scans, cutted_masks = [], []
 		while offset <= (current_depth//target_depth -1)*target_depth:
 			cutted_scan = np.ndarray((self.side_length, self.side_length, target_depth))
-			cutted_mask = np.ndarray((self.side_length, self.side_length, target_depth))
 			cutted_scan = self.scan_voxel_array[:,:,offset:offset+target_depth]
-			cutted_mask = self.mask_voxel_array[:,:,offset:offset+target_depth]
 			cutted_scans.append(np.nan_to_num(cutted_scan))
-			cutted_masks.append(np.nan_to_num(cutted_mask))
+			if not scan_only:
+				cutted_mask = np.ndarray((self.side_length, self.side_length, target_depth))
+				cutted_mask = self.mask_voxel_array[:,:,offset:offset+target_depth]
+				cutted_masks.append(np.nan_to_num(cutted_mask))
 			offset += target_depth
 		return cutted_scans, cutted_masks
 
@@ -262,7 +272,7 @@ class Patient:
 		return {'top_left': top_left, 'top_right': top_right, 
 				'bot_left': bot_left, 'bot_right': bot_right}
 
-	def cut(self, target_depth):
+	def cut(self, target_depth, scan_only=False):
 		""" If self.scan_voxel_array and self.mask_voxel are currently of 
 			size (s,s,d), this function will create several cubes 
 			of size (s//2,s//2, target_depth), by doing:
@@ -270,11 +280,12 @@ class Patient:
 			2. z cutting
 			3. for each z cutted cubes, cut each slice in four 
 		"""
-		self.pad_z(target_depth)
-		cutted_scans, cutted_masks = self.cut_z(target_depth)
+		self.pad_z(target_depth, scan_only)
+		cutted_scans, cutted_masks = self.cut_z(target_depth, scan_only)
 		for i in range(len(cutted_scans)):
 			self.cutted_scans.append(self.cut_xy_in_four(cutted_scans[i]))
-			self.cutted_masks.append(self.cut_xy_in_four(cutted_masks[i]))
+			if not scan_only:
+				self.cutted_masks.append(self.cut_xy_in_four(cutted_masks[i]))
 
 
 # +-------------------------------------------------------------------------------------+ #
@@ -327,10 +338,10 @@ class Patient:
 
 	def save_cutted_scans(self, name):
 		for i in range(len(self.cutted_scans)):
-			np.save(f"{name}_[z{i}_top_left]",  self.cutted_scans[i]['top_left'])
-			np.save(f"{name}_[z{i}_top_right]", self.cutted_scans[i]['top_right'])
-			np.save(f"{name}_[z{i}_bot_left]",  self.cutted_scans[i]['bot_left'])
-			np.save(f"{name}_[z{i}_bot_right]", self.cutted_scans[i]['bot_right'])
+			np.save(f"{name}_[z{i}_top_left]",  np.nan_to_num(np.expand_dims(self.cutted_scans[i]['top_left'],  axis=(0))))
+			np.save(f"{name}_[z{i}_top_right]", np.nan_to_num(np.expand_dims(self.cutted_scans[i]['top_right'], axis=(0))))
+			np.save(f"{name}_[z{i}_bot_left]",  np.nan_to_num(np.expand_dims(self.cutted_scans[i]['bot_left'],  axis=(0))))
+			np.save(f"{name}_[z{i}_bot_right]", np.nan_to_num(np.expand_dims(self.cutted_scans[i]['bot_right'], axis=(0))))
 
 	def save_cutted_masks(self, name):
 		for i in range(len(self.cutted_masks)):

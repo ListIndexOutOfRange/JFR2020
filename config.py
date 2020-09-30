@@ -89,8 +89,8 @@ class Preprocess:
                          e.g if augment_proba=0.5, 50% of the inputed scan will be left unchanged by
                          augmentation.
     """
-    input_dir:       str = "../sficv_2/"
-    output_dir:      str = "../preprocessed/"
+    input_dir:       str = "../sficv/"
+    output_dir:      str = "../eval/"
     max_depth:       int = 500
     cube_side:       int = 10
     factor:          int = 2
