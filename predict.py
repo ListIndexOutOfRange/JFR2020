@@ -90,7 +90,7 @@ class PredictorCalci():
                 scan[torch.isnan(scan)] = 0
             scan = scan.float().to(self.device)
             predicted_mask = self.model(scan)
-            dico_volume[list_patient_id[index]] += torch.sum(predicted_mask >= self.threshold)
+            dico_volume[list_patient_id[index]] += torch.sum(predicted_mask >= self.threshold).to('cpu').item()
         ###
         #compute score for each patient
         ###

@@ -108,6 +108,6 @@ if __name__ == '__main__':
     # test_preprocessing()
     # run_training()
     # test('./lightning_logs/version_') 
-    #preprocess_eval()
+    # preprocess_eval()
     predict("./lightning_logs/version_5/checkpoints/epoch=45.ckpt", "../eval/scans/", "../predictions.csv")
 
